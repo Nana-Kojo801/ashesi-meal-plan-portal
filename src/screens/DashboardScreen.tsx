@@ -11,6 +11,7 @@ interface DashboardScreenProps {
   studentId: string;
   balanceData: BalanceData | null;
   loading: boolean;
+  refreshing: boolean;
   error: string | null;
   onRetry: () => void;
   onNav: (s: Screen) => void;
@@ -49,7 +50,7 @@ function StatCard({ icon, label, value, sub, valueColor, delay = 0 }: {
   );
 }
 
-export function DashboardScreen({ studentId, balanceData, loading, error, onRetry, onNav, isMobile }: DashboardScreenProps) {
+export function DashboardScreen({ studentId, balanceData, loading, refreshing, error, onRetry, onNav, isMobile }: DashboardScreenProps) {
   const today = todayISO();
 
   const { data: todayHistory = [], isSuccess: isHistorySuccess, isLoading: isHistoryLoading } = useQuery<HistoryItem[]>({
@@ -130,14 +131,19 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
           </div>
           <button
             onClick={onRetry}
+            disabled={refreshing}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: '#D97706', color: '#fff', fontWeight: 700, fontSize: 12,
-              padding: '8px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              fontFamily: 'inherit', flexShrink: 0,
+              background: refreshing ? '#B45309' : '#D97706', color: '#fff', fontWeight: 700, fontSize: 12,
+              padding: '8px 14px', borderRadius: 10, border: 'none',
+              cursor: refreshing ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit', flexShrink: 0, transition: 'background .15s',
             }}
           >
-            <RefreshCw size={13} /> Refresh
+            {refreshing
+              ? <><div style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,.35)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin .7s linear infinite' }} /> Refreshing…</>
+              : <><RefreshCw size={13} /> Refresh</>
+            }
           </button>
         </motion.div>
       )}

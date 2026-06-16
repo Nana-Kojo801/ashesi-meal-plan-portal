@@ -51,6 +51,7 @@ export default function App() {
   const {
     data: balanceData,
     isLoading: loadingBalance,
+    isFetching: fetchingBalance,
     error: balanceQueryError,
   } = useQuery({
     queryKey: ['balance', studentId],
@@ -140,6 +141,7 @@ export default function App() {
               studentId={studentId}
               balanceData={balanceData ?? null}
               loading={loadingBalance}
+              refreshing={fetchingBalance && !loadingBalance}
               error={balanceError}
               onRetry={() => queryClient.invalidateQueries({ queryKey: ['balance', studentId] })}
               onNav={setScreen}
