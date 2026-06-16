@@ -5,7 +5,6 @@ import { RefreshCw } from 'lucide-react';
 import { fetchHistory } from '../api';
 import { todayISO, yesterdayISO, dateLabel, formatTime } from '../lib/utils';
 import { HistorySkeleton } from '../components/Skeleton';
-import { DatePickerPopover } from '../components/DatePickerPopover';
 import type { HistoryItem } from '../types';
 
 type Filter = 'today' | 'yesterday' | 'last2' | 'date' | 'custom';
@@ -100,13 +99,13 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
           animate={{ opacity: 1, y: 0 }}
           style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #ECE0D4', borderRadius: 18, padding: '14px 18px' }}
         >
-          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px' }}>DATE</span>
-          <DatePickerPopover
-            mode="single"
+          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px', flexShrink: 0 }}>DATE</span>
+          <input
+            type="date"
             value={customDate}
-            onChange={setCustomDate}
-            placeholder="Pick a date"
+            onChange={e => setCustomDate(e.target.value)}
             max={todayISO()}
+            style={{ background: '#F2E7DC', border: '1.5px solid #ECE0D4', borderRadius: 12, padding: '9px 12px', fontWeight: 600, fontSize: 13, color: '#1C1413', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}
           />
         </motion.div>
       )}
@@ -115,15 +114,24 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #ECE0D4', borderRadius: 18, padding: '14px 18px' }}
+          style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, background: '#fff', border: '1px solid #ECE0D4', borderRadius: 18, padding: '14px 18px' }}
         >
-          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px' }}>RANGE</span>
-          <DatePickerPopover
-            mode="range"
-            from={customFrom}
-            to={customTo}
-            onChange={(f, t) => { setCustomFrom(f); setCustomTo(t); }}
+          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px', flexShrink: 0 }}>FROM</span>
+          <input
+            type="date"
+            value={customFrom}
+            onChange={e => setCustomFrom(e.target.value)}
+            max={customTo || todayISO()}
+            style={{ background: '#F2E7DC', border: '1.5px solid #ECE0D4', borderRadius: 12, padding: '9px 12px', fontWeight: 600, fontSize: 13, color: '#1C1413', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}
+          />
+          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px', flexShrink: 0 }}>TO</span>
+          <input
+            type="date"
+            value={customTo}
+            onChange={e => setCustomTo(e.target.value)}
+            min={customFrom || undefined}
             max={todayISO()}
+            style={{ background: '#F2E7DC', border: '1.5px solid #ECE0D4', borderRadius: 12, padding: '9px 12px', fontWeight: 600, fontSize: 13, color: '#1C1413', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}
           />
         </motion.div>
       )}

@@ -5,7 +5,9 @@ const BASE = 'https://api.mplan.ashesi.edu.gh/api';
 export async function fetchBalance(studentId: string): Promise<BalanceData> {
   const res = await fetch(`${BASE}/getSubscriberCurrentBalance/${studentId}`);
   if (!res.ok) throw new Error(`Failed to load balance (${res.status})`);
-  return res.json() as Promise<BalanceData>;
+  const data = await res.json() as ({ status: 'fail' } | BalanceData);
+  if ('status' in data && data.status === 'fail') throw new Error('Student ID not found. Please check and try again.');
+  return data as BalanceData;
 }
 
 export async function fetchHistory(
