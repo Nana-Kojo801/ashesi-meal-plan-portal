@@ -5,9 +5,10 @@ import { RefreshCw } from 'lucide-react';
 import { fetchHistory } from '../api';
 import { todayISO, yesterdayISO, dateLabel, formatTime } from '../lib/utils';
 import { HistorySkeleton } from '../components/Skeleton';
+import { DatePickerPopover } from '../components/DatePickerPopover';
 import type { HistoryItem } from '../types';
 
-type Filter = 'today' | 'yesterday' | 'last2' | 'custom';
+type Filter = 'today' | 'yesterday' | 'last2' | 'date' | 'custom';
 
 interface HistoryScreenProps {
   studentId: string;
@@ -18,7 +19,8 @@ const CHIPS: { key: Filter; label: string }[] = [
   { key: 'today', label: 'Today' },
   { key: 'yesterday', label: 'Yesterday' },
   { key: 'last2', label: 'Last 2 days' },
-  { key: 'custom', label: 'Custom range' },
+  { key: 'date', label: 'Pick a date' },
+  { key: 'custom', label: 'Date range' },
 ];
 
 function chipStyle(active: boolean): React.CSSProperties {
@@ -33,6 +35,7 @@ function chipStyle(active: boolean): React.CSSProperties {
 
 export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenProps) {
   const [filter, setFilter] = useState<Filter>('today');
+  const [customDate, setCustomDate] = useState('');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
 
@@ -43,11 +46,12 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
       case 'today': return { startDate: today, endDate: today, rangeLabel: 'Today' };
       case 'yesterday': return { startDate: yesterday, endDate: yesterday, rangeLabel: 'Yesterday' };
       case 'last2': return { startDate: yesterday, endDate: today, rangeLabel: 'Last 2 days' };
+      case 'date': return { startDate: customDate || today, endDate: customDate || today, rangeLabel: customDate ? dateLabel(customDate) : 'Pick a date' };
       case 'custom': return { startDate: customFrom || today, endDate: customTo || today, rangeLabel: 'Custom range' };
     }
-  }, [filter, customFrom, customTo]);
+  }, [filter, customDate, customFrom, customTo]);
 
-  const customReady = filter !== 'custom' || (!!customFrom && !!customTo);
+  const customReady = filter === 'custom' ? (!!customFrom && !!customTo) : filter === 'date' ? !!customDate : true;
 
   const { data: history = [], isLoading, error, refetch } = useQuery<HistoryItem[]>({
     queryKey: ['history', studentId, startDate, endDate],
@@ -90,23 +94,37 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
         ))}
       </div>
 
+      {filter === 'date' && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #ECE0D4', borderRadius: 18, padding: '14px 18px' }}
+        >
+          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px' }}>DATE</span>
+          <DatePickerPopover
+            mode="single"
+            value={customDate}
+            onChange={setCustomDate}
+            placeholder="Pick a date"
+            max={todayISO()}
+          />
+        </motion.div>
+      )}
+
       {filter === 'custom' && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 14, background: '#fff', border: '1px solid #ECE0D4', borderRadius: 18, padding: '16px 18px' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #ECE0D4', borderRadius: 18, padding: '14px 18px' }}
         >
-          {(['FROM', 'TO'] as const).map((lbl, idx) => (
-            <div key={lbl} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px' }}>{lbl}</label>
-              <input
-                type="date"
-                value={idx === 0 ? customFrom : customTo}
-                onChange={e => idx === 0 ? setCustomFrom(e.target.value) : setCustomTo(e.target.value)}
-                style={{ background: '#F2E7DC', color: '#1C1413', border: '1px solid #ECE0D4', borderRadius: 11, padding: '10px 12px', fontWeight: 600, fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
-              />
-            </div>
-          ))}
+          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px' }}>RANGE</span>
+          <DatePickerPopover
+            mode="range"
+            from={customFrom}
+            to={customTo}
+            onChange={(f, t) => { setCustomFrom(f); setCustomTo(t); }}
+            max={todayISO()}
+          />
         </motion.div>
       )}
 
