@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    button{font-family:inherit;cursor:pointer;border:none;background:none}
+    input{font-family:inherit}
+    ::placeholder{opacity:.55}
+    @keyframes screenIn{from{transform:translateY(13px)}to{transform:none}}
+    @keyframes fadeUp{from{transform:translateY(18px)}to{transform:none}}
+    @keyframes toastIn{from{transform:translate(-50%,16px)}to{transform:translate(-50%,0)}}
+    @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  </style>
+</helmet>
+
+<sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;display:flex;flex-direction:column;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:{{ t.bg }};color:{{ t.ink }};animation:fadeUp .5s ease both">
+
+    <!-- ============ TOP BAR ============ -->
+    <header style="position:{{ headerPos }};top:0;z-index:30;display:flex;align-items:center;gap:16px;padding:{{ headerPad }};background:{{ t.surfaceBlur }};backdrop-filter:blur(14px);border-bottom:1px solid {{ t.line }}">
+      <div style="display:flex;align-items:center;gap:11px;flex:0 0 auto">
+        <div style="width:38px;height:38px;border-radius:12px;background:{{ t.primary }};display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -8px {{ t.glow }}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ t.onPrimary }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a3 3 0 0 0 3 3v8M7 3v6M10 3v6M18 3c-1.5 1-2 3-2 6s.5 4 2 5v7"/></svg>
+        </div>
+        <div style="font-weight:800;font-size:16px;letter-spacing:-.3px;white-space:nowrap">Ashesi Meals</div>
+      </div>
+
+      <sc-if value="{{ isWide }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;justify-content:center">
+          <div style="display:inline-flex;align-items:center;gap:5px;background:{{ t.bg2 }};padding:5px;border-radius:16px">
+            <button onClick="{{ navHome }}" style="{{ tabHome }}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1v-9"/></svg>
+              Dashboard
+            </button>
+            <button onClick="{{ navReport }}" style="{{ tabReport }}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9 8h6M9 12h6"/></svg>
+              History
+            </button>
+            <button onClick="{{ navSettings }}" style="{{ tabSettings }}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"/></svg>
+              Settings
+            </button>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isNarrow }}" hint-placeholder-val="{{ false }}"><div style="flex:1"></div></sc-if>
+
+      <div style="display:flex;align-items:center;gap:12px;flex:0 0 auto">
+        <sc-if value="{{ isWide }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:10px;background:{{ t.surface }};border:1px solid {{ t.line }};padding:6px 14px 6px 8px;border-radius:14px;box-shadow:{{ t.shadowSm }}">
+            <div style="position:relative;width:30px;height:30px;flex:0 0 auto">
+              <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="11" fill="none" stroke="{{ t.ringTrack }}" stroke-width="4"></circle><circle cx="15" cy="15" r="11" fill="none" stroke="{{ t.primary }}" stroke-width="4" stroke-linecap="round" stroke-dasharray="{{ miniRingCirc }}" stroke-dashoffset="{{ miniRingOffset }}" transform="rotate(-90 15 15)"></circle></svg>
+            </div>
+            <div style="line-height:1.05">
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;letter-spacing:-.3px">GHS {{ dailyBalance }}</div>
+              <div style="font-size:10px;font-weight:700;color:{{ t.inkSoft }};letter-spacing:.2px">LEFT TODAY</div>
+            </div>
+          </div>
+        </sc-if>
+        <button onClick="{{ navSettings }}" title="{{ studentName }}" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,{{ t.heroFrom }},{{ t.heroTo }});color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:0 0 auto" style-hover="filter:brightness(1.05)">{{ initial }}</button>
+      </div>
+    </header>
+
+    <!-- ============ CONTENT ============ -->
+    <main style="flex:1;padding:{{ mainPad }}">
+      <div key="{{ screen }}" style="max-width:{{ contentMaxW }};margin:0 auto;width:100%;animation:screenIn .42s cubic-bezier(.2,.7,.2,1) both">
+
+        <!-- ===== DASHBOARD ===== -->
+        <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:{{ t.inkSoft }}">{{ greeting }},</div>
+              <h1 style="margin:2px 0 0;font-size:{{ h1Size }};font-weight:800;letter-spacing:-1px;line-height:1.05">{{ firstName }} 👋</h1>
+            </div>
+
+            <div style="background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:26px;box-shadow:{{ t.shadow }};padding:{{ heroPad }};display:flex;flex-wrap:nowrap;align-items:center;gap:{{ heroGap }};position:relative;overflow:hidden">
+              <div style="position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:{{ t.glowSoft }};filter:blur(10px)"></div>
+              <div style="position:relative;width:{{ ringSize }}px;height:{{ ringSize }}px;flex:0 0 auto">
+                <svg width="{{ ringSize }}" height="{{ ringSize }}" viewBox="0 0 {{ ringSize }} {{ ringSize }}">
+                  <circle cx="{{ ringCenter }}" cy="{{ ringCenter }}" r="{{ ringR }}" fill="none" stroke="{{ t.ringTrack }}" stroke-width="{{ ringSW }}"></circle>
+                  <circle cx="{{ ringCenter }}" cy="{{ ringCenter }}" r="{{ ringR }}" fill="none" stroke="{{ t.primary }}" stroke-width="{{ ringSW }}" stroke-linecap="round" stroke-dasharray="{{ ringCirc }}" stroke-dashoffset="{{ ringOffset }}" transform="rotate(-90 {{ ringCenter }} {{ ringCenter }})"></circle>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+                  <div style="font-size:{{ ghsSize }};font-weight:700;letter-spacing:1.5px;color:{{ t.inkSoft }}">GHS</div>
+                  <div style="font-family:'Space Grotesk',sans-serif;font-size:{{ balNumSize }};font-weight:700;letter-spacing:-1.5px;line-height:1">{{ dailyBalance }}</div>
+                  <div style="font-size:{{ subSize }};font-weight:600;color:{{ t.inkSoft }};max-width:{{ subMax }};line-height:1.2">left to spend today</div>
+                </div>
+              </div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:14px">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:{{ t.inkSoft }}">You've used <b style="color:{{ t.ink }}">GHS {{ spentToday }}</b> of your <b style="color:{{ t.ink }}">GHS {{ dailyLimit }}</b> daily limit</div>
+                  <div style="margin-top:10px;height:10px;border-radius:99px;background:{{ t.ringTrack }};overflow:hidden">
+                    <div style="height:100%;width:{{ usedPct }}%;border-radius:99px;background:linear-gradient(90deg,{{ t.heroFrom }},{{ t.primary }})"></div>
+                  </div>
+                </div>
+                <button onClick="{{ navReport }}" style="align-self:flex-start;margin-top:2px;display:{{ heroBtnDisplay }};align-items:center;gap:7px;background:{{ t.bg2 }};color:{{ t.ink }};font-weight:700;font-size:13px;padding:11px 16px;border-radius:13px" style-hover="background:{{ t.primary }};color:{{ t.onPrimary }}">
+                  View purchase history
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:{{ statCols }};gap:14px">
+              <div style="background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:20px;padding:18px 20px;box-shadow:{{ t.shadowSm }}">
+                <div style="display:flex;align-items:center;gap:8px;color:{{ t.inkSoft }};font-size:12.5px;font-weight:700"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M7 15h3"/></svg> Total loaded</div>
+                <div style="font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;letter-spacing:-1px;margin-top:8px">GHS {{ totalBalance }}</div>
+                <div style="font-size:12px;color:{{ t.inkSoft }};font-weight:600;margin-top:2px">on your meal plan</div>
+              </div>
+              <div style="background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:20px;padding:18px 20px;box-shadow:{{ t.shadowSm }}">
+                <div style="display:flex;align-items:center;gap:8px;color:{{ t.inkSoft }};font-size:12.5px;font-weight:700"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Spent today</div>
+                <div style="font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;letter-spacing:-1px;margin-top:8px;color:{{ t.primary }}">GHS {{ spentToday }}</div>
+                <div style="font-size:12px;color:{{ t.inkSoft }};font-weight:600;margin-top:2px">{{ todayCount }} purchases today</div>
+              </div>
+              <div style="background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:20px;padding:18px 20px;box-shadow:{{ t.shadowSm }}">
+                <div style="display:flex;align-items:center;gap:8px;color:{{ t.inkSoft }};font-size:12.5px;font-weight:700"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13a9 9 0 1 1 18 0"/><path d="M12 13l4-4"/><path d="M3 13h2M19 13h2"/></svg> Daily limit</div>
+                <div style="font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;letter-spacing:-1px;margin-top:8px">GHS {{ dailyLimit }}</div>
+                <div style="font-size:12px;color:{{ t.inkSoft }};font-weight:600;margin-top:2px">resets at midnight</div>
+              </div>
+            </div>
+
+            <div style="background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:22px;box-shadow:{{ t.shadowSm }};overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px">
+                <div style="font-weight:800;font-size:15px">Recent activity</div>
+                <button onClick="{{ navReport }}" style="font-size:12.5px;font-weight:700;color:{{ t.primary }}">See all</button>
+              </div>
+              <sc-for list="{{ recent }}" as="tx" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-top:1px solid {{ t.line }}">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ tx.item }}</div>
+                    <div style="font-size:11.5px;color:{{ t.inkSoft }};font-weight:600;margin-top:3px">{{ tx.vendor }} · {{ tx.time }}</div>
+                  </div>
+                  <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;flex:0 0 auto;white-space:nowrap">−GHS {{ tx.lineTotal }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== HISTORY ===== -->
+        <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <h1 style="margin:0;font-size:{{ h1Size }};font-weight:800;letter-spacing:-1px;line-height:1.05">Purchase history</h1>
+              <div style="font-size:13.5px;font-weight:600;color:{{ t.inkSoft }};margin-top:4px">Track every meal swipe across the Akorno cafés.</div>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:9px">
+              <sc-for list="{{ filterChips }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.onClick }}" style="{{ c.style }}" style-hover="opacity:.9">{{ c.label }}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ showCustom }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:18px;padding:16px 18px">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <label style="font-size:11.5px;font-weight:700;color:{{ t.inkSoft }};letter-spacing:.3px">FROM</label>
+                  <input type="date" value="{{ customFrom }}" onChange="{{ onCustomFrom }}" style="background:{{ t.bg2 }};color:{{ t.ink }};border:1px solid {{ t.line }};border-radius:11px;padding:10px 12px;font-weight:600;font-size:13px">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <label style="font-size:11.5px;font-weight:700;color:{{ t.inkSoft }};letter-spacing:.3px">TO</label>
+                  <input type="date" value="{{ customTo }}" onChange="{{ onCustomTo }}" style="background:{{ t.bg2 }};color:{{ t.ink }};border:1px solid {{ t.line }};border-radius:11px;padding:10px 12px;font-weight:600;font-size:13px">
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(120deg,{{ t.heroFrom }},{{ t.heroTo }});color:#fff;border-radius:18px;padding:16px 20px;box-shadow:{{ t.shadow }}">
+              <div>
+                <div style="font-size:12.5px;font-weight:600;opacity:.85">{{ rangeLabel }}</div>
+                <div style="font-weight:700;font-size:14px;margin-top:2px">{{ filteredCount }} purchases</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:12.5px;font-weight:600;opacity:.85">Total spent</div>
+                <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;letter-spacing:-1px">GHS {{ filteredTotal }}</div>
+              </div>
+            </div>
+
+            <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:18px">
+                <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+                  <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 9px">
+                      <div style="font-weight:800;font-size:13px;letter-spacing:.2px">{{ g.label }}</div>
+                      <div style="font-size:12px;font-weight:700;color:{{ t.inkSoft }}">GHS {{ g.total }}</div>
+                    </div>
+                    <div style="background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:20px;box-shadow:{{ t.shadowSm }};overflow:hidden">
+                      <sc-for list="{{ g.items }}" as="tx" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;gap:14px;padding:15px 18px;border-top:1px solid {{ tx.border }}">
+                          <div style="width:3px;height:34px;border-radius:99px;background:{{ t.primary }};opacity:.55;flex:0 0 auto"></div>
+                          <div style="flex:1;min-width:0">
+                            <div style="font-weight:700;font-size:14.5px">{{ tx.item }}</div>
+                            <div style="font-size:12px;color:{{ t.inkSoft }};font-weight:600;margin-top:3px">{{ tx.vendor }} · Qty {{ tx.qty }} · {{ tx.time }}</div>
+                          </div>
+                          <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;flex:0 0 auto;white-space:nowrap">GHS {{ tx.lineTotal }}</div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:52px 20px;background:{{ t.surface }};border:1px dashed {{ t.line }};border-radius:20px">
+                <div style="font-weight:700;font-size:15px">No purchases in this range</div>
+                <div style="font-size:13px;color:{{ t.inkSoft }};font-weight:600;margin-top:5px">Try a different date filter.</div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- ===== SETTINGS ===== -->
+        <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <h1 style="margin:0;font-size:{{ h1Size }};font-weight:800;letter-spacing:-1px;line-height:1.05">Settings</h1>
+              <div style="font-size:13.5px;font-weight:600;color:{{ t.inkSoft }};margin-top:4px">Manage your account and meal plan.</div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:16px;background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:22px;padding:20px;box-shadow:{{ t.shadowSm }}">
+              <div style="width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,{{ t.heroFrom }},{{ t.heroTo }});color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;flex:0 0 auto">{{ initial }}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:800;font-size:17px">{{ studentName }}</div>
+                <div style="font-size:13px;color:{{ t.inkSoft }};font-weight:600">Student ID {{ studentId }} · {{ email }}</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:{{ settingsCols }};gap:14px">
+              <div style="background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:20px;padding:20px;box-shadow:{{ t.shadowSm }};display:flex;flex-direction:column">
+                <div style="width:44px;height:44px;border-radius:13px;background:{{ t.bg2 }};color:{{ t.primary }};display:flex;align-items:center;justify-content:center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3"/></svg>
+                </div>
+                <div style="font-weight:800;font-size:15.5px;margin-top:14px">Reset PIN</div>
+                <div style="font-size:13px;color:{{ t.inkSoft }};font-weight:600;margin-top:4px;line-height:1.45">We'll email a brand-new PIN to your Ashesi inbox right away.</div>
+                <div style="flex:1"></div>
+                <button onClick="{{ sendPin }}" style="margin-top:16px;background:{{ t.primary }};color:{{ t.onPrimary }};font-weight:700;font-size:13.5px;padding:13px 16px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 12px 22px -12px {{ t.glow }}" style-hover="filter:brightness(1.06)" style-active="transform:scale(.98)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3 7 9 6 9-6"/></svg>
+                  Send new PIN
+                </button>
+              </div>
+
+              <div style="background:{{ t.surface }};border:1px solid {{ t.line }};border-radius:20px;padding:20px;box-shadow:{{ t.shadowSm }};display:flex;flex-direction:column;position:relative;overflow:hidden">
+                <div style="position:absolute;top:14px;right:14px;font-size:10.5px;font-weight:800;letter-spacing:.5px;color:{{ t.inkSoft }};background:{{ t.bg2 }};padding:5px 9px;border-radius:99px">SOON</div>
+                <div style="width:44px;height:44px;border-radius:13px;background:{{ t.bg2 }};color:{{ t.inkSoft }};display:flex;align-items:center;justify-content:center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><path d="M16 14h2"/></svg>
+                </div>
+                <div style="font-weight:800;font-size:15.5px;margin-top:14px;color:{{ t.inkSoft }}">Top up balance</div>
+                <div style="font-size:13px;color:{{ t.inkSoft }};font-weight:600;margin-top:4px;line-height:1.45">Add funds with Mobile Money or card — landing in a future release.</div>
+                <div style="flex:1"></div>
+                <button disabled style="margin-top:16px;background:{{ t.bg2 }};color:{{ t.inkSoft }};font-weight:700;font-size:13.5px;padding:13px 16px;border-radius:13px;cursor:not-allowed;display:inline-flex;align-items:center;justify-content:center;gap:8px">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                  Top up
+                </button>
+              </div>
+            </div>
+
+            <button onClick="{{ doLogout }}" style="align-self:flex-start;display:inline-flex;align-items:center;gap:8px;color:{{ t.primary }};font-weight:700;font-size:13.5px;padding:12px 16px;border-radius:13px;border:1px solid {{ t.line }};background:{{ t.surface }}" style-hover="background:{{ t.bg2 }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+              Sign out
+            </button>
+          </div>
+        </sc-if>
+
+      </div>
+    </main>
+
+    <!-- ============ FLOATING NAV (mobile) ============ -->
+    <sc-if value="{{ isNarrow }}" hint-placeholder-val="{{ false }}">
+      <nav style="position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:flex-start;gap:4px;background:{{ t.surfaceBlur }};backdrop-filter:blur(16px);border-top:1px solid {{ t.line }};box-shadow:0 -10px 30px -18px rgba(80,20,10,.22);padding:10px 12px calc(12px + env(safe-area-inset-bottom))">
+        <button onClick="{{ navHome }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:transparent">
+          <span style="{{ pillHome }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1v-9"/></svg></span>
+          <span style="font-weight:700;font-size:10.5px;color:{{ lblHome }}">Home</span>
+        </button>
+        <button onClick="{{ navReport }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:transparent">
+          <span style="{{ pillReport }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9 8h6M9 12h6"/></svg></span>
+          <span style="font-weight:700;font-size:10.5px;color:{{ lblReport }}">History</span>
+        </button>
+        <button onClick="{{ navSettings }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:transparent">
+          <span style="{{ pillSettings }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"/></svg></span>
+          <span style="font-weight:700;font-size:10.5px;color:{{ lblSettings }}">Settings</span>
+        </button>
+      </nav>
+    </sc-if>
+  </div>
+</sc-if>
+
+<!-- ============ LOGIN ============ -->
+<sc-if value="{{ notLoggedIn }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh;display:flex;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:{{ t.bg }};color:{{ t.ink }}">
+    <sc-if value="{{ isWide }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:0 0 46%;position:relative;overflow:hidden;background:linear-gradient(155deg,{{ t.heroFrom }},{{ t.heroTo }});color:#fff;padding:54px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="position:absolute;width:340px;height:340px;border-radius:50%;border:38px solid rgba(255,255,255,.10);right:-90px;bottom:-110px"></div>
+        <div style="position:absolute;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.10);left:-40px;top:120px;animation:floaty 6s ease-in-out infinite"></div>
+        <div style="display:flex;align-items:center;gap:11px;position:relative">
+          <div style="width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a3 3 0 0 0 3 3v8M7 3v6M10 3v6M18 3c-1.5 1-2 3-2 6s.5 4 2 5v7"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:16px;white-space:nowrap">Ashesi Meals</div>
+        </div>
+        <div style="position:relative">
+          <div style="font-size:13px;font-weight:700;letter-spacing:1.5px;opacity:.8">SUBSCRIBER PORTAL</div>
+          <div style="font-size:42px;font-weight:800;letter-spacing:-1.5px;line-height:1.08;margin-top:12px;max-width:420px">Your meal plan, in your pocket.</div>
+          <div style="font-size:15px;font-weight:500;opacity:.9;margin-top:14px;max-width:380px;line-height:1.5">Check your daily balance, scan your purchase history, and manage your account — all with your Student ID.</div>
+        </div>
+        <div style="position:relative;font-size:12.5px;font-weight:600;opacity:.85">Powered by Akorno Services · Ashesi University</div>
+      </div>
+    </sc-if>
+
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:28px">
+      <div style="width:100%;max-width:400px;animation:fadeUp .6s cubic-bezier(.2,.7,.2,1) both">
+        <sc-if value="{{ isNarrow }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:30px">
+            <div style="width:40px;height:40px;border-radius:13px;background:{{ t.primary }};display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ t.onPrimary }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a3 3 0 0 0 3 3v8M7 3v6M10 3v6M18 3c-1.5 1-2 3-2 6s.5 4 2 5v7"/></svg></div>
+            <div style="font-weight:800;font-size:17px;white-space:nowrap">Ashesi Meals</div>
+          </div>
+        </sc-if>
+        <div style="font-size:13px;font-weight:700;letter-spacing:.4px;color:{{ t.primary }}">{{ greeting }} 👋</div>
+        <h1 style="margin:8px 0 6px;font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1.1">Welcome back</h1>
+        <div style="font-size:14px;font-weight:600;color:{{ t.inkSoft }};line-height:1.5">Enter your Student ID to open your meal plan dashboard.</div>
+
+        <div style="margin-top:26px">
+          <label style="font-size:12px;font-weight:800;letter-spacing:.4px;color:{{ t.inkSoft }}">STUDENT ID</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;background:{{ t.surface }};border:1.5px solid {{ t.line }};border-radius:15px;padding:0 14px" style-focus-within="border-color:{{ t.primary }}">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="{{ t.inkSoft }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+            <input value="{{ idInput }}" onChange="{{ onId }}" onKeyDown="{{ onKey }}" placeholder="e.g. 20231234" inputmode="numeric" style="flex:1;border:none;outline:none;background:transparent;color:{{ t.ink }};font-size:16px;font-weight:600;padding:15px 0">
+          </div>
+          <button onClick="{{ doLogin }}" style="width:100%;margin-top:16px;background:{{ t.primary }};color:{{ t.onPrimary }};font-weight:800;font-size:15px;padding:16px;border-radius:15px;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 16px 30px -14px {{ t.glow }}" style-hover="filter:brightness(1.06)" style-active="transform:scale(.985)">
+            Open my dashboard
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+          <div style="margin-top:16px;font-size:12px;font-weight:600;color:{{ t.inkSoft }};text-align:center;line-height:1.5">Forgot your PIN? You can reset it from Settings once you're in.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- toast -->
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;bottom:{{ toastBottom }};left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:11px;background:{{ t.toastBg }};color:{{ t.toastInk }};padding:14px 20px;border-radius:15px;box-shadow:0 20px 40px -14px rgba(0,0,0,.45);font-weight:700;font-size:13.5px;max-width:90vw;animation:toastIn .35s cubic-bezier(.2,.7,.2,1) both">
+    <span style="width:26px;height:26px;border-radius:50%;background:{{ t.primary }};color:{{ t.onPrimary }};display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>
+    {{ toast }}
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:820},&quot;studentName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Kwame Mensah&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;dailyLimit&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:116,&quot;min&quot;:50,&quot;max&quot;:300,&quot;tsType&quot;:&quot;number&quot;},&quot;totalBalance&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:842,&quot;min&quot;:0,&quot;max&quot;:2000,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  state = {
+    loggedIn: false, screen: 'home', idInput: '', studentId: '',
+    filter: 'today', isWide: true, toast: null, customFrom: null, customTo: null
+  };
+
+  componentDidMount() {
+    this._onResize = () => this.setState({ isWide: window.innerWidth >= 760 });
+    this._onResize();
+    window.addEventListener('resize', this._onResize);
+    const iso = d => d.toISOString().slice(0, 10);
+    const now = new Date();
+    const next = { customFrom: iso(new Date(now.getTime() - 3 * 86400000)), customTo: iso(now) };
+    try {
+      const p = new URLSearchParams(location.search);
+      if (p.get('demo')) {
+        next.loggedIn = true;
+        next.studentId = p.get('id') || '20231234';
+        next.screen = p.get('screen') || 'home';
+      }
+    } catch (e) {}
+    this.setState(next);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+    clearTimeout(this._tt);
+  }
+
+  flash(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._tt);
+    this._tt = setTimeout(() => this.setState({ toast: null }), 3600);
+  }
+
+  doLogin() {
+    const v = (this.state.idInput || '').trim();
+    if (v.replace(/\s/g, '').length < 3) { this.flash('Please enter a valid Student ID'); return; }
+    this.setState({ loggedIn: true, studentId: v, screen: 'home' });
+  }
+  doLogout() { this.setState({ loggedIn: false, idInput: '', screen: 'home', filter: 'today' }); }
+
+  renderVals() {
+    const t = {
+      bg: '#FBF6F0', bg2: '#F2E7DC', surface: '#FFFFFF', surfaceBlur: 'rgba(255,255,255,.82)',
+      ink: '#1C1413', inkSoft: '#7A6A63', line: '#ECE0D4',
+      primary: '#D81E2C', onPrimary: '#FFFFFF', heroFrom: '#E0233A', heroTo: '#8E0F18',
+      glow: 'rgba(216,30,44,.55)', glowSoft: 'rgba(216,30,44,.10)', ringTrack: '#F0E3D7',
+      shadow: '0 22px 46px -24px rgba(110,30,18,.40)', shadowSm: '0 12px 26px -18px rgba(110,30,18,.26)',
+      toastBg: '#1C1413', toastInk: '#FFFFFF'
+    };
+
+    const studentName = this.props.studentName || 'Kwame Mensah';
+    const firstName = studentName.split(' ')[0];
+    const initial = (firstName[0] || 'A').toUpperCase();
+    const lastName = studentName.split(' ')[1] || 'student';
+    const email = firstName.toLowerCase() + '.' + lastName.toLowerCase() + '@ashesi.edu.gh';
+
+    const hr = new Date().getHours();
+    const greeting = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+
+    const dailyLimit = this.props.dailyLimit ?? 116;
+    const totalBalance = this.props.totalBalance ?? 842;
+    const V = { main: 'Main Cafe', haku: 'Hakuna Matata', acad: 'Academic Cafe' };
+    const raw = [
+      { d: 0, item: 'Waakye with Egg', price: 25, qty: 1, time: '8:10 AM', vendor: V.acad },
+      { d: 0, item: 'Meat Pie', price: 10, qty: 1, time: '11:05 AM', vendor: V.main },
+      { d: 0, item: 'Small Bottle Water', price: 3, qty: 1, time: '11:06 AM', vendor: V.main },
+      { d: 1, item: 'Banku with Tilapia', price: 40, qty: 1, time: '1:10 PM', vendor: V.haku },
+      { d: 1, item: 'Fruit Juice', price: 12, qty: 1, time: '1:12 PM', vendor: V.haku },
+      { d: 1, item: 'Sausage Roll', price: 8, qty: 2, time: '4:30 PM', vendor: V.acad },
+      { d: 2, item: 'Fried Rice with Fish', price: 30, qty: 1, time: '12:55 PM', vendor: V.main },
+      { d: 2, item: 'Large Bottle Water', price: 5, qty: 1, time: '12:56 PM', vendor: V.main },
+      { d: 2, item: 'Ice Cappuccino', price: 25, qty: 1, time: '3:20 PM', vendor: V.acad },
+      { d: 3, item: 'Jollof Rice with Chicken', price: 35, qty: 1, time: '1:05 PM', vendor: V.main },
+      { d: 3, item: 'Meat Pie', price: 10, qty: 2, time: '9:30 AM', vendor: V.acad }
+    ];
+    const pad = n => String(n).padStart(2, '0');
+    const isoOf = days => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(x.getDate() - days); return x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate()); };
+    const tx = raw.map(r => ({ ...r, lineTotal: r.price * r.qty, iso: isoOf(r.d), vendor: 'Akorno · ' + r.vendor }));
+
+    const spentToday = tx.filter(x => x.d === 0).reduce((s, x) => s + x.lineTotal, 0);
+    const dailyBalance = Math.max(0, dailyLimit - spentToday);
+    const frac = dailyLimit ? dailyBalance / dailyLimit : 0;
+    const usedPct = Math.min(100, Math.round((spentToday / dailyLimit) * 100));
+    const isWide = this.state.isWide, isNarrow = !isWide;
+    const ringSize = isWide ? 200 : 132;
+    const ringSW = isWide ? 17 : 12;
+    const ringCenter = ringSize / 2;
+    const ringR = (ringSize - ringSW) / 2 - 1;
+    const ringCirc = 2 * Math.PI * ringR;
+    const ringOffset = ringCirc * (1 - frac);
+    const balNumSize = isWide ? '46px' : '32px';
+    const ghsSize = isWide ? '11px' : '9px';
+    const subSize = isWide ? '12px' : '10px';
+    const subMax = isWide ? '120px' : '92px';
+    const heroGap = isWide ? '28px' : '18px';
+    const headerPos = isWide ? 'sticky' : 'static';
+    const miniRingCirc = 2 * Math.PI * 11;
+    const miniRingOffset = miniRingCirc * (1 - frac);
+    const recent = tx.filter(x => x.d === 0).slice(0, 3);
+    const todayCount = tx.filter(x => x.d === 0).length;
+
+    const filter = this.state.filter;
+    const cFrom = this.state.customFrom, cTo = this.state.customTo;
+    let filtered, rangeLabel;
+    if (filter === 'today') { filtered = tx.filter(x => x.d === 0); rangeLabel = 'Today'; }
+    else if (filter === 'yesterday') { filtered = tx.filter(x => x.d === 1); rangeLabel = 'Yesterday'; }
+    else if (filter === 'last2') { filtered = tx.filter(x => x.d <= 1); rangeLabel = 'Last 2 days'; }
+    else { filtered = tx.filter(x => cFrom && cTo && x.iso >= cFrom && x.iso <= cTo); rangeLabel = 'Custom range'; }
+
+    const dayLabel = d => {
+      if (d === 0) return 'Today';
+      if (d === 1) return 'Yesterday';
+      const dt = new Date(); dt.setDate(dt.getDate() - d);
+      return dt.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+    };
+    const byDay = {};
+    filtered.forEach(x => { (byDay[x.d] = byDay[x.d] || []).push(x); });
+    const groups = Object.keys(byDay).map(Number).sort((a, b) => a - b).map(d => ({
+      label: dayLabel(d), total: byDay[d].reduce((s, x) => s + x.lineTotal, 0),
+      items: byDay[d].map((x, i) => ({ ...x, border: i === 0 ? 'transparent' : t.line }))
+    }));
+    const filteredTotal = filtered.reduce((s, x) => s + x.lineTotal, 0);
+    const filteredCount = filtered.length;
+
+    // desktop pill tabs
+    const tabBase = 'display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:11px;font-weight:700;font-size:13.5px;';
+    const tab = active => tabBase + (active
+      ? `background:${t.primary};color:${t.onPrimary};box-shadow:0 8px 16px -10px ${t.glow};`
+      : `background:transparent;color:${t.inkSoft};`);
+
+    // mobile bottom-nav icon pills
+    const pillBase = 'display:flex;align-items:center;justify-content:center;padding:7px 24px;border-radius:99px;';
+    const pill = active => pillBase + (active ? `background:${t.primary};color:${t.onPrimary};` : `color:${t.inkSoft};`);
+    const lbl = active => active ? t.primary : t.inkSoft;
+
+    const chip = (key, label) => {
+      const active = filter === key;
+      return {
+        label, onClick: () => this.setState({ filter: key }),
+        style: `padding:10px 16px;border-radius:13px;font-weight:700;font-size:13px;border:1.5px solid ${active ? t.primary : t.line};background:${active ? t.primary : t.surface};color:${active ? t.onPrimary : t.ink};`
+      };
+    };
+    const filterChips = [chip('today', 'Today'), chip('yesterday', 'Yesterday'), chip('last2', 'Last 2 days'), chip('custom', 'Custom range')];
+
+    const screen = this.state.screen;
+
+    return {
+      t, loggedIn: this.state.loggedIn, notLoggedIn: !this.state.loggedIn,
+      isWide, isNarrow, screen,
+      isHome: screen === 'home', isReport: screen === 'report', isSettings: screen === 'settings',
+      greeting, studentName, firstName, initial, email, studentId: this.state.studentId || '20231234',
+      idInput: this.state.idInput, toast: this.state.toast,
+      dailyBalance, dailyLimit, totalBalance, spentToday, usedPct, ringCirc, ringOffset, miniRingCirc, miniRingOffset, todayCount, recent,
+      filterChips, showCustom: filter === 'custom', customFrom: cFrom, customTo: cTo,
+      groups, filteredTotal, filteredCount, rangeLabel, hasResults: filteredCount > 0, noResults: filteredCount === 0,
+      tabHome: tab(screen === 'home'), tabReport: tab(screen === 'report'), tabSettings: tab(screen === 'settings'),
+      pillHome: pill(screen === 'home'), pillReport: pill(screen === 'report'), pillSettings: pill(screen === 'settings'),
+      lblHome: lbl(screen === 'home'), lblReport: lbl(screen === 'report'), lblSettings: lbl(screen === 'settings'),
+      ringSize, ringCenter, ringR, ringSW, balNumSize, ghsSize, subSize, subMax, heroGap, headerPos,
+      heroBtnDisplay: isWide ? 'inline-flex' : 'none',
+      headerPad: isWide ? '14px 30px' : '12px 16px',
+      mainPad: isWide ? '32px 30px 44px' : '18px 16px 104px',
+      contentMaxW: isWide ? '960px' : '100%',
+      heroPad: isWide ? '30px 34px' : '24px',
+      h1Size: isWide ? '30px' : '25px',
+      statCols: isWide ? 'repeat(3,1fr)' : '1fr',
+      settingsCols: isWide ? '1fr 1fr' : '1fr',
+      toastBottom: isNarrow ? '92px' : '28px',
+      navHome: () => this.setState({ screen: 'home' }),
+      navReport: () => this.setState({ screen: 'report' }),
+      navSettings: () => this.setState({ screen: 'settings' }),
+      onId: (e) => this.setState({ idInput: e.target.value }),
+      onKey: (e) => { if (e.key === 'Enter') this.doLogin(); },
+      doLogin: () => this.doLogin(),
+      doLogout: () => this.doLogout(),
+      onCustomFrom: (e) => this.setState({ customFrom: e.target.value }),
+      onCustomTo: (e) => this.setState({ customTo: e.target.value }),
+      sendPin: () => this.flash('New PIN sent to ' + email)
+    };
+  }
+}
+</script>
+</body>
+</html>

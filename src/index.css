@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #D81E2C;
+  --color-hero-from: #E0233A;
+  --color-hero-to: #8E0F18;
+  --color-app-bg: #FBF6F0;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F2E7DC;
+  --color-ink: #1C1413;
+  --color-ink-soft: #7A6A63;
+  --color-border: #ECE0D4;
+  --color-ring-track: #F0E3D7;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+}
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(13px); }
+  to { opacity: 1; transform: none; }
+}
+
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: #FBF6F0;
+  color: #1C1413;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input { font-family: inherit; }
+::placeholder { opacity: .55; }
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #F0E3D7;
+  border-top-color: #D81E2C;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F2E7DC; border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: #D8BFA8; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #D81E2C; }
+* { scrollbar-width: thin; scrollbar-color: #D8BFA8 #F2E7DC; }
