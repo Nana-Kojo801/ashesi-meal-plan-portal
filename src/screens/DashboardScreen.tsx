@@ -98,7 +98,7 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
   const usedPct = Math.min(100, Math.round((spentToday / dailyLimit) * 100));
   const ringSize = isMobile ? 132 : 200;
   const ringSW = isMobile ? 12 : 17;
-  const recent = todayHistory.slice(0, 3);
+  const recent = [...todayHistory].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>

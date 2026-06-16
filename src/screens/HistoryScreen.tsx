@@ -73,7 +73,7 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
         date,
         label: dateLabel(date),
         total: items.reduce((s, x) => s + x.cost * x.quantity, 0),
-        items,
+        items: [...items].sort((a, b) => b.date.localeCompare(a.date)),
       }));
   }, [history]);
 
