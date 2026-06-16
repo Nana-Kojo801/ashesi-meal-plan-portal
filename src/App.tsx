@@ -9,9 +9,27 @@ import { DashboardScreen } from './screens/DashboardScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { fetchBalance } from './api';
-import type { Screen, ToastState } from './types';
+import type { BalanceData, Screen, ToastState } from './types';
 
 const STORAGE_KEY = 'ashesiMealsStudentId';
+const BALANCE_CACHE_KEY = 'ashesiMealsBalance';
+const BALANCE_TTL = 60 * 60 * 1000; // 1 hour
+
+function readBalanceCache(id: string): { data: BalanceData; updatedAt: number } | undefined {
+  try {
+    const raw = localStorage.getItem(`${BALANCE_CACHE_KEY}_${id}`);
+    if (!raw) return undefined;
+    return JSON.parse(raw) as { data: BalanceData; updatedAt: number };
+  } catch {
+    return undefined;
+  }
+}
+
+function writeBalanceCache(id: string, data: BalanceData) {
+  try {
+    localStorage.setItem(`${BALANCE_CACHE_KEY}_${id}`, JSON.stringify({ data, updatedAt: Date.now() }));
+  } catch { /* quota exceeded — ignore */ }
+}
 
 export default function App() {
   const queryClient = useQueryClient();
@@ -28,6 +46,8 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  const cachedBalance = studentId ? readBalanceCache(studentId) : undefined;
+
   const {
     data: balanceData,
     isLoading: loadingBalance,
@@ -36,10 +56,17 @@ export default function App() {
     queryKey: ['balance', studentId],
     queryFn: () => fetchBalance(studentId!),
     enabled: !!studentId,
-    staleTime: 2 * 60 * 1000,
-    refetchOnWindowFocus: true,
-    refetchInterval: 5 * 60 * 1000,
+    staleTime: BALANCE_TTL,
+    refetchOnWindowFocus: false,
+    refetchInterval: false,
+    initialData: cachedBalance?.data,
+    initialDataUpdatedAt: cachedBalance?.updatedAt,
   });
+
+  // Persist fetched balance — TanStack Query only writes when it actually fetches
+  useEffect(() => {
+    if (balanceData && studentId) writeBalanceCache(studentId, balanceData);
+  }, [balanceData, studentId]);
 
   const balanceError = balanceQueryError instanceof Error ? balanceQueryError.message : null;
 
@@ -62,6 +89,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    if (studentId) localStorage.removeItem(`${BALANCE_CACHE_KEY}_${studentId}`);
     localStorage.removeItem(STORAGE_KEY);
     queryClient.clear();
     setStudentId(null);
