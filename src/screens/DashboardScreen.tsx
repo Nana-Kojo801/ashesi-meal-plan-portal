@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { CreditCard, Clock, Gauge, ArrowRight, RefreshCw } from 'lucide-react';
 import { Ring } from '../components/Ring';
-import { DashboardSkeleton } from '../components/Skeleton';
+import { Skeleton, DashboardSkeleton } from '../components/Skeleton';
 import { fetchHistory } from '../api';
 import { todayISO, getGreeting, formatTime, dateLabel } from '../lib/utils';
 import type { BalanceData, HistoryItem, Screen } from '../types';
@@ -52,7 +52,7 @@ function StatCard({ icon, label, value, sub, valueColor, delay = 0 }: {
 export function DashboardScreen({ studentId, balanceData, loading, error, onRetry, onNav, isMobile }: DashboardScreenProps) {
   const today = todayISO();
 
-  const { data: todayHistory = [], isSuccess: isHistorySuccess } = useQuery<HistoryItem[]>({
+  const { data: todayHistory = [], isSuccess: isHistorySuccess, isLoading: isHistoryLoading } = useQuery<HistoryItem[]>({
     queryKey: ['history', studentId, today, today],
     queryFn: () => fetchHistory(studentId, today, today),
     enabled: !!balanceData,
@@ -201,7 +201,17 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
             See all
           </button>
         </div>
-        {recent.length === 0 ? (
+        {isHistoryLoading ? (
+          [0, 1, 2].map(i => (
+            <div key={i} style={{ display: 'flex', gap: 14, padding: '14px 20px', borderTop: '1px solid #ECE0D4', alignItems: 'center' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Skeleton height={14} borderRadius={6} />
+                <Skeleton width="55%" height={11} borderRadius={5} />
+              </div>
+              <Skeleton width={70} height={15} borderRadius={6} />
+            </div>
+          ))
+        ) : recent.length === 0 ? (
           <div style={{ padding: '24px 20px', textAlign: 'center', color: '#7A6A63', fontSize: 13, fontWeight: 600 }}>No purchases today</div>
         ) : (
           recent.map((tx: HistoryItem, i: number) => (
