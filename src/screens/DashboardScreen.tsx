@@ -52,7 +52,7 @@ function StatCard({ icon, label, value, sub, valueColor, delay = 0 }: {
 export function DashboardScreen({ studentId, balanceData, loading, error, onRetry, onNav, isMobile }: DashboardScreenProps) {
   const today = todayISO();
 
-  const { data: todayHistory = [] } = useQuery<HistoryItem[]>({
+  const { data: todayHistory = [], isSuccess: isHistorySuccess } = useQuery<HistoryItem[]>({
     queryKey: ['history', studentId, today, today],
     queryFn: () => fetchHistory(studentId, today, today),
     enabled: !!balanceData,
@@ -86,10 +86,14 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
 
   const greeting = getGreeting();
   const firstName = balanceData.firstname;
-  const dailyBalance = balanceData.current_balance;
   const dailyLimit = balanceData.daily_spending_limit;
   const totalBalance = balanceData.amount;
-  const spentToday = Math.max(0, dailyLimit - dailyBalance);
+  // Use history to compute spentToday once it's loaded — history refreshes frequently
+  // without triggering an OTP, so it reflects purchases sooner than balanceData (1hr TTL).
+  const spentToday = isHistorySuccess
+    ? todayHistory.reduce((sum, tx) => sum + tx.cost * tx.quantity, 0)
+    : Math.max(0, dailyLimit - balanceData.current_balance);
+  const dailyBalance = Math.max(0, dailyLimit - spentToday);
   const fraction = dailyLimit > 0 ? dailyBalance / dailyLimit : 0;
   const usedPct = Math.min(100, Math.round((spentToday / dailyLimit) * 100));
   const ringSize = isMobile ? 132 : 200;
