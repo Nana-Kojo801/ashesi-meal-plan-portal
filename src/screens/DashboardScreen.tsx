@@ -86,14 +86,14 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
 
   const greeting = getGreeting();
   const firstName = balanceData.firstname;
+  const dailyBalance = balanceData.current_balance;
   const dailyLimit = balanceData.daily_spending_limit;
   const totalBalance = balanceData.amount;
-  // Use history to compute spentToday once it's loaded — history refreshes frequently
-  // without triggering an OTP, so it reflects purchases sooner than balanceData (1hr TTL).
-  const spentToday = isHistorySuccess
+  const spentToday = Math.max(0, dailyLimit - dailyBalance);
+  const spentTodayFromHistory = isHistorySuccess
     ? todayHistory.reduce((sum, tx) => sum + tx.cost * tx.quantity, 0)
-    : Math.max(0, dailyLimit - balanceData.current_balance);
-  const dailyBalance = Math.max(0, dailyLimit - spentToday);
+    : null;
+  const hasNewTransaction = spentTodayFromHistory !== null && spentTodayFromHistory > spentToday + 0.5;
   const fraction = dailyLimit > 0 ? dailyBalance / dailyLimit : 0;
   const usedPct = Math.min(100, Math.round((spentToday / dailyLimit) * 100));
   const ringSize = isMobile ? 132 : 200;
@@ -108,6 +108,39 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
           {firstName} 👋
         </h1>
       </motion.div>
+
+      {hasNewTransaction && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: '#FFF7ED', border: '1px solid #FBC97A', borderRadius: 14,
+            padding: '12px 16px', display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', gap: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 18 }}>🔔</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E' }}>New transaction detected</div>
+              <div style={{ fontSize: 12, color: '#B45309', fontWeight: 600, marginTop: 1 }}>
+                Refresh to see your updated balance (an email OTP will be sent)
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onRetry}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: '#D97706', color: '#fff', fontWeight: 700, fontSize: 12,
+              padding: '8px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              fontFamily: 'inherit', flexShrink: 0,
+            }}
+          >
+            <RefreshCw size={13} /> Refresh
+          </button>
+        </motion.div>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
