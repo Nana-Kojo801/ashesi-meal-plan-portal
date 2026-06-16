@@ -102,7 +102,15 @@ export function DatePickerPopover(props: DatePickerPopoverProps) {
             borderRadius: 20,
             boxShadow: '0 24px 48px -12px rgba(60,15,8,.22), 0 0 0 1px rgba(226,210,196,.6)',
             overflow: 'hidden',
-          }}
+            fontSize: '13px',
+            '--rdp-day-height': '34px',
+            '--rdp-day-width': '34px',
+            '--rdp-day_button-height': '32px',
+            '--rdp-day_button-width': '32px',
+            '--rdp-nav_button-height': '1.75rem',
+            '--rdp-nav_button-width': '1.75rem',
+            '--rdp-nav-height': '2.25rem',
+          } as React.CSSProperties}
         >
           {props.mode === 'single' ? (
             <DayPicker
