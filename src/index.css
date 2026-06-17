@@ -105,3 +105,9 @@ input { font-family: inherit; }
 ::-webkit-scrollbar-thumb { background: #D8BFA8; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #D81E2C; }
 * { scrollbar-width: thin; scrollbar-color: #D8BFA8 #F2E7DC; }
+
+/* Refetch border comet */
+@keyframes marchSVG {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -1; }
+}
