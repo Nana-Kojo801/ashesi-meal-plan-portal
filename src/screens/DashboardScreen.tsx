@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { CreditCard, Clock, Gauge, ArrowRight, RefreshCw } from 'lucide-react';
 import { Ring } from '../components/Ring';
 import { Skeleton, DashboardSkeleton } from '../components/Skeleton';
@@ -11,7 +11,6 @@ interface DashboardScreenProps {
   studentId: string;
   balanceData: BalanceData | null;
   loading: boolean;
-  refreshing: boolean;
   error: string | null;
   onRetry: () => void;
   onNav: (s: Screen) => void;
@@ -50,16 +49,22 @@ function StatCard({ icon, label, value, sub, valueColor, delay = 0 }: {
   );
 }
 
-export function DashboardScreen({ studentId, balanceData, loading, refreshing, error, onRetry, onNav, isMobile }: DashboardScreenProps) {
+export function DashboardScreen({ studentId, balanceData, loading, error, onRetry, onNav, isMobile }: DashboardScreenProps) {
   const today = todayISO();
+  const queryClient = useQueryClient();
+  const fetching = useIsFetching({ queryKey: ['balance', studentId] }) > 0;
 
-  const { data: todayHistory = [], isSuccess: isHistorySuccess, isLoading: isHistoryLoading } = useQuery<HistoryItem[]>({
+  const handleRefresh = () => {
+    void queryClient.invalidateQueries({ queryKey: ['balance', studentId] });
+    void queryClient.invalidateQueries({ queryKey: ['history', studentId] });
+  };
+
+  const { data: todayHistory = [], isLoading: isHistoryLoading } = useQuery<HistoryItem[]>({
     queryKey: ['history', studentId, today, today],
     queryFn: () => fetchHistory(studentId, today, today),
     enabled: !!balanceData,
-    staleTime: 60_000,
-    refetchOnWindowFocus: true,
-    refetchInterval: 3 * 60 * 1000,
+    staleTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   if (loading && !balanceData) return <DashboardSkeleton isMobile={isMobile} />;
@@ -91,10 +96,6 @@ export function DashboardScreen({ studentId, balanceData, loading, refreshing, e
   const dailyLimit = balanceData.daily_spending_limit;
   const totalBalance = balanceData.amount;
   const spentToday = Math.max(0, dailyLimit - dailyBalance);
-  const spentTodayFromHistory = isHistorySuccess
-    ? todayHistory.reduce((sum, tx) => sum + tx.cost * tx.quantity, 0)
-    : null;
-  const hasNewTransaction = spentTodayFromHistory !== null && spentTodayFromHistory > spentToday + 0.5;
   const fraction = dailyLimit > 0 ? dailyBalance / dailyLimit : 0;
   const usedPct = Math.min(100, Math.round((spentToday / dailyLimit) * 100));
   const ringSize = isMobile ? 132 : 200;
@@ -103,50 +104,36 @@ export function DashboardScreen({ studentId, balanceData, loading, refreshing, e
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#7A6A63' }}>{greeting},</div>
-        <h1 style={{ margin: '2px 0 0', fontSize: isMobile ? 25 : 30, fontWeight: 800, letterSpacing: '-1px', lineHeight: 1.05 }}>
-          {firstName} 👋
-        </h1>
-      </motion.div>
-
-      {hasNewTransaction && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+        style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}
+      >
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#7A6A63' }}>{greeting},</div>
+          <h1 style={{ margin: '2px 0 0', fontSize: isMobile ? 25 : 30, fontWeight: 800, letterSpacing: '-1px', lineHeight: 1.05 }}>
+            {firstName} 👋
+          </h1>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={fetching}
+          title="Refresh balance"
           style={{
-            background: '#FFF7ED', border: '1px solid #FBC97A', borderRadius: 14,
-            padding: '12px 16px', display: 'flex', alignItems: 'center',
-            justifyContent: 'space-between', gap: 12,
+            width: 38, height: 38, borderRadius: 12, flexShrink: 0, marginTop: 2,
+            background: '#fff', border: '1px solid #ECE0D4',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: fetching ? 'not-allowed' : 'pointer',
+            boxShadow: '0 2px 8px -4px rgba(110,30,18,.12)',
+            transition: 'background .15s, border-color .15s',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 18 }}>🔔</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E' }}>New transaction detected</div>
-              <div style={{ fontSize: 12, color: '#B45309', fontWeight: 600, marginTop: 1 }}>
-                Refresh to see your updated balance (an email OTP will be sent)
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onRetry}
-            disabled={refreshing}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: refreshing ? '#B45309' : '#D97706', color: '#fff', fontWeight: 700, fontSize: 12,
-              padding: '8px 14px', borderRadius: 10, border: 'none',
-              cursor: refreshing ? 'not-allowed' : 'pointer',
-              fontFamily: 'inherit', flexShrink: 0, transition: 'background .15s',
-            }}
-          >
-            {refreshing
-              ? <><div style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,.35)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin .7s linear infinite' }} /> Refreshing…</>
-              : <><RefreshCw size={13} /> Refresh</>
-            }
-          </button>
-        </motion.div>
-      )}
+          <RefreshCw
+            size={16}
+            color={fetching ? '#D8BFA8' : '#7A6A63'}
+            style={{ animation: fetching ? 'spin .7s linear infinite' : 'none' }}
+          />
+        </button>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
@@ -33,8 +34,9 @@ function writeBalanceCache(id: string, data: BalanceData) {
 
 export default function App() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [studentId, setStudentId] = useState<string | null>(() => localStorage.getItem(STORAGE_KEY));
-  const [screen, setScreen] = useState<Screen>('home');
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -51,7 +53,6 @@ export default function App() {
   const {
     data: balanceData,
     isLoading: loadingBalance,
-    isFetching: fetchingBalance,
     error: balanceQueryError,
   } = useQuery({
     queryKey: ['balance', studentId],
@@ -69,6 +70,14 @@ export default function App() {
     if (balanceData && studentId) writeBalanceCache(studentId, balanceData);
   }, [balanceData, studentId]);
 
+  // Refetch balance + today's history every time user navigates to dashboard
+  useEffect(() => {
+    if (screen === 'home' && studentId) {
+      void queryClient.invalidateQueries({ queryKey: ['balance', studentId] });
+      void queryClient.invalidateQueries({ queryKey: ['history', studentId] });
+    }
+  }, [screen, studentId, queryClient]);
+
   const balanceError = balanceQueryError instanceof Error ? balanceQueryError.message : null;
 
   const handleLogin = async (id: string) => {
@@ -81,7 +90,7 @@ export default function App() {
       });
       localStorage.setItem(STORAGE_KEY, id);
       setStudentId(id);
-      setScreen('home');
+      navigate('/');
     } catch (e) {
       setLoginError(e instanceof Error ? e.message : 'Invalid Student ID or network error');
     } finally {
@@ -94,7 +103,15 @@ export default function App() {
     localStorage.removeItem(STORAGE_KEY);
     queryClient.clear();
     setStudentId(null);
-    setScreen('home');
+    navigate('/');
+  };
+
+  const screen: Screen =
+    location.pathname === '/history' ? 'report' :
+    location.pathname === '/settings' ? 'settings' : 'home';
+
+  const handleNav = (s: Screen) => {
+    navigate(s === 'home' ? '/' : s === 'report' ? '/history' : '/settings');
   };
 
   const showToast = (message: string, type: ToastState['type'] = 'success') => {
@@ -128,7 +145,7 @@ export default function App() {
     <div style={{ minHeight: '100vh', background: '#FBF6F0', color: '#1C1413', display: 'flex', flexDirection: 'column' }}>
       <Header
         screen={screen}
-        onNav={setScreen}
+        onNav={handleNav}
         balanceData={balanceData ?? null}
         studentInitial={studentInitial}
         isMobile={isMobile}
@@ -141,10 +158,9 @@ export default function App() {
               studentId={studentId}
               balanceData={balanceData ?? null}
               loading={loadingBalance}
-              refreshing={fetchingBalance && !loadingBalance}
               error={balanceError}
               onRetry={() => queryClient.invalidateQueries({ queryKey: ['balance', studentId] })}
-              onNav={setScreen}
+              onNav={handleNav}
               isMobile={isMobile}
             />
           )}
@@ -165,7 +181,7 @@ export default function App() {
       </main>
 
       {isMobile && createPortal(
-        <BottomNav screen={screen} onNav={setScreen} />,
+        <BottomNav screen={screen} onNav={handleNav} />,
         document.body,
       )}
 
