@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import {
   TrendingUp, TrendingDown, Coffee, ShoppingBag, Flame, Star,
-  Percent, Leaf, Wallet, Calendar, Zap, Target,
+  Percent, Leaf, Wallet, Zap, Target,
 } from 'lucide-react';
 import { fetchHistory } from '../api';
 import { HistorySkeleton } from '../components/Skeleton';
@@ -329,9 +329,9 @@ export function AnalyticsScreen() {
       {/* daily trend */}
       <ChartCard title="Daily spending trend" sub="Last 30 days" delay={0.24}>
         <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={stats.dailyTrend} margin={{ top: 4, right: 8, left: 4, bottom: 16 }}>
+          <LineChart data={stats.dailyTrend} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
             <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#7A6A63', fontWeight: 600 }} tickLine={false} axisLine={false} interval={6} dy={6} />
-            <YAxis tick={{ fontSize: 10, fill: '#7A6A63', fontWeight: 600 }} tickLine={false} axisLine={false} width={36} />
+            <YAxis tick={{ fontSize: 10, fill: '#7A6A63', fontWeight: 600, dx: -16 }} tickLine={false} axisLine={false} width={52} />
             <Tooltip content={<ChartTooltip />} />
             <Line type="monotone" dataKey="spend" stroke={RED} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: RED, stroke: '#fff', strokeWidth: 2 }} />
           </LineChart>
