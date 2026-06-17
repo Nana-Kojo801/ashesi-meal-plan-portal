@@ -289,10 +289,10 @@ export function AnalyticsScreen() {
 
       {/* summary 4-grid — appears first */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-        <StatCard icon={<Wallet size={14} />}   label="Total spent"   value={`GHS ${Math.round(stats.totalSpent)}`}   sub="last 30 days"             delay={0.04} accent />
-        <StatCard icon={<Calendar size={14} />} label="Avg per day"   value={`GHS ${Math.round(stats.avgPerActiveDay)}`} sub={`over ${stats.activeDays} active day${stats.activeDays !== 1 ? 's' : ''}`} delay={0.08} />
-        <StatCard icon={<Zap size={14} />}      label="Purchases"     value={`${stats.totalTx}`}                      sub="transactions"             delay={0.12} />
-        <StatCard icon={<Target size={14} />}   label="Avg per meal"  value={`GHS ${Math.round(stats.avgPerMeal)}`}   sub="per transaction"          delay={0.16} />
+        <StatCard icon={<Wallet size={14} />} label="Total spent"    value={`GHS ${Math.round(stats.totalSpent)}`}                           sub="last 30 days"                              delay={0.04} accent />
+        <StatCard icon={<Flame size={14} />}  label="Favourite café" value={stats.cafes[0]?.name?.split(' ')[0] ?? '—'}                      sub={`${stats.cafes[0]?.visits ?? 0} visits`}   delay={0.08} />
+        <StatCard icon={<Zap size={14} />}    label="Purchases"      value={`${stats.totalTx}`}                                              sub="transactions"                              delay={0.12} />
+        <StatCard icon={<ShoppingBag size={14} />} label="Priciest item" value={`GHS ${Math.round(stats.mostExpensive?.unit ?? 0)}`} sub={stats.mostExpensive?.name?.split(' ')[0] ?? '—'} delay={0.16} />
       </div>
 
       {/* weekly comparison banner */}
@@ -329,9 +329,9 @@ export function AnalyticsScreen() {
       {/* daily trend */}
       <ChartCard title="Daily spending trend" sub="Last 30 days" delay={0.24}>
         <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={stats.dailyTrend} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
-            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#7A6A63', fontWeight: 600 }} tickLine={false} axisLine={false} interval={6} />
-            <YAxis tick={{ fontSize: 10, fill: '#7A6A63', fontWeight: 600 }} tickLine={false} axisLine={false} />
+          <LineChart data={stats.dailyTrend} margin={{ top: 4, right: 8, left: 4, bottom: 16 }}>
+            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#7A6A63', fontWeight: 600 }} tickLine={false} axisLine={false} interval={6} dy={6} />
+            <YAxis tick={{ fontSize: 10, fill: '#7A6A63', fontWeight: 600 }} tickLine={false} axisLine={false} width={36} />
             <Tooltip content={<ChartTooltip />} />
             <Line type="monotone" dataKey="spend" stroke={RED} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: RED, stroke: '#fff', strokeWidth: 2 }} />
           </LineChart>
@@ -437,92 +437,89 @@ export function AnalyticsScreen() {
         ))}
       </ChartCard>
 
-      {/* item personality grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-        <StatCard
-          icon={<Flame size={14} />} label="Favourite café"
-          value={stats.cafes[0]?.name?.split(' ')[0] ?? '—'}
-          sub={`${stats.cafes[0]?.visits ?? 0} visits · GHS ${stats.cafes[0]?.spend ?? 0}`}
-          delay={0.48}
-        />
-        <StatCard
-          icon={<Star size={14} />} label="Most ordered"
-          value={stats.mostFrequent?.name?.split(' ').slice(0,2).join(' ') ?? '—'}
-          sub={`${stats.mostFrequent?.qty ?? 0}× in 30 days`}
-          delay={0.52}
-        />
-        <StatCard
-          icon={<ShoppingBag size={14} />} label="Priciest item"
-          value={`GHS ${Math.round(stats.mostExpensive?.unit ?? 0)}`}
-          sub={stats.mostExpensive?.name ?? '—'}
-          delay={0.56}
-        />
-        <StatCard
-          icon={<Coffee size={14} />} label="Variety"
-          value={`${stats.varietyScore}`}
-          sub={`items · ${stats.oneTimeTries} tried once`}
-          delay={0.60}
-        />
-      </div>
-
-      {/* bottom: month, streak, budget, peak */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.64, ease: [0.2, 0.7, 0.2, 1] }}
-          style={{ background: '#fff', border: '1px solid #ECE0D4', borderRadius: 20, padding: '18px 20px', boxShadow: '0 12px 26px -18px rgba(110,30,18,.18)' }}
-        >
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#7A6A63', marginBottom: 10 }}>Month vs last month</div>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: '-0.8px', color: '#1C1413' }}>
-            GHS {Math.round(stats.thisMonth)}
-          </div>
-          {monthPct !== null && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5, fontSize: 12, fontWeight: 700 }}>
-              {monthDiff >= 0 ? <TrendingUp size={13} color={RED} /> : <TrendingDown size={13} color="#16a34a" />}
-              <span style={{ color: monthDiff >= 0 ? RED : '#16a34a' }}>
-                {monthDiff >= 0 ? '+' : '-'}{monthPct}% vs last month
-              </span>
+      {/* bottom: compact list card */}
+      <ChartCard title="More insights" delay={0.48}>
+        {[
+          {
+            icon: <Flame size={15} color={RED} />,
+            label: 'Favourite café',
+            value: stats.cafes[0]?.name?.split(' ')[0] ?? '—',
+            sub: `${stats.cafes[0]?.visits ?? 0} visits · GHS ${stats.cafes[0]?.spend ?? 0}`,
+          },
+          {
+            icon: <Star size={15} color="#7A6A63" />,
+            label: 'Most ordered',
+            value: stats.mostFrequent?.name?.split(' ').slice(0,2).join(' ') ?? '—',
+            sub: `${stats.mostFrequent?.qty ?? 0}× in 30 days`,
+          },
+          {
+            icon: <ShoppingBag size={15} color="#7A6A63" />,
+            label: 'Priciest item',
+            value: `GHS ${Math.round(stats.mostExpensive?.unit ?? 0)}`,
+            sub: stats.mostExpensive?.name ?? '—',
+          },
+          {
+            icon: <Coffee size={15} color="#7A6A63" />,
+            label: 'Variety',
+            value: `${stats.varietyScore} items`,
+            sub: `${stats.oneTimeTries} tried only once`,
+          },
+          {
+            icon: <TrendingUp size={15} color={monthDiff >= 0 ? RED : '#16a34a'} />,
+            label: 'Month vs last month',
+            value: `GHS ${Math.round(stats.thisMonth)}`,
+            badge: monthPct !== null
+              ? { text: `${monthDiff >= 0 ? '+' : '-'}${monthPct}%`, color: monthDiff >= 0 ? RED : '#16a34a' }
+              : undefined,
+            sub: `Last month: GHS ${Math.round(stats.lastMonth)}`,
+          },
+          {
+            icon: <Leaf size={15} color={stats.streak >= 2 ? RED : '#7A6A63'} />,
+            label: 'Savings streak',
+            value: stats.streak === 0 ? '0 days' : `${stats.streak} day${stats.streak !== 1 ? 's' : ''}`,
+            sub: stats.streak === 0 ? 'Spent today' : 'No purchases — nice!',
+          },
+          ...(stats.limitPct !== null ? [{
+            icon: <Percent size={15} color={stats.limitPct > 90 ? RED : '#7A6A63'} />,
+            label: 'Avg daily vs limit',
+            value: `${stats.limitPct}%`,
+            sub: `GHS ${Math.round(stats.avgPerActiveDay)} avg of GHS ${stats.dailyLimit} limit`,
+          }] : []),
+          ...(stats.daysUnderBudget !== null ? [{
+            icon: <Target size={15} color="#7A6A63" />,
+            label: 'Days within budget',
+            value: `${stats.daysUnderBudget} / ${stats.activeDays}`,
+            sub: 'active spending days',
+          }] : []),
+          ...(stats.peakEntry ? [{
+            icon: <Zap size={15} color={RED} />,
+            label: 'Peak spending day',
+            value: `GHS ${Math.round(stats.peakEntry[1])}`,
+            sub: shortDate(stats.peakEntry[0]),
+          }] : []),
+        ].map((row, i, arr) => (
+          <div
+            key={row.label}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 14,
+              padding: '13px 0',
+              borderBottom: i < arr.length - 1 ? '1px solid #F2E7DC' : 'none',
+            }}
+          >
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{row.icon}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>{row.label}</div>
+              <div style={{ fontSize: 11.5, color: '#7A6A63', fontWeight: 600, marginTop: 1 }}>{row.sub}</div>
             </div>
-          )}
-          <div style={{ fontSize: 11, color: '#7A6A63', fontWeight: 600, marginTop: 3 }}>
-            Last: GHS {Math.round(stats.lastMonth)}
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 16, fontWeight: 700, letterSpacing: '-0.4px' }}>{row.value}</div>
+              {row.badge && (
+                <div style={{ fontSize: 10.5, fontWeight: 800, color: row.badge.color, marginTop: 1 }}>{row.badge.text}</div>
+              )}
+            </div>
           </div>
-        </motion.div>
-
-        <StatCard
-          icon={<Leaf size={14} />} label="Savings streak"
-          value={stats.streak === 0 ? '0 days' : `${stats.streak} day${stats.streak !== 1 ? 's' : ''}`}
-          sub={stats.streak === 0 ? 'Spent today' : 'No purchases — nice!'}
-          delay={0.68} accent={stats.streak >= 2}
-        />
-
-        {stats.limitPct !== null && (
-          <StatCard
-            icon={<Percent size={14} />} label="Avg vs limit"
-            value={`${stats.limitPct}%`}
-            sub={`GHS ${Math.round(stats.avgPerActiveDay)} avg · GHS ${stats.dailyLimit} limit`}
-            delay={0.72} accent={stats.limitPct > 90}
-          />
-        )}
-
-        {stats.daysUnderBudget !== null && (
-          <StatCard
-            icon={<Target size={14} />} label="Budget days"
-            value={`${stats.daysUnderBudget}/${stats.activeDays}`}
-            sub="active days within limit"
-            delay={0.76}
-          />
-        )}
-
-        {stats.peakEntry && (
-          <StatCard
-            icon={<Zap size={14} />} label="Peak day"
-            value={`GHS ${Math.round(stats.peakEntry[1])}`}
-            sub={shortDate(stats.peakEntry[0])}
-            delay={0.80}
-          />
-        )}
-      </div>
+        ))}
+      </ChartCard>
 
     </div>
   );
