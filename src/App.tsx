@@ -8,6 +8,7 @@ import { Toast } from './components/Toast';
 import { LoginScreen } from './screens/LoginScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
+import { AnalyticsScreen } from './screens/AnalyticsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { fetchBalance } from './api';
 import type { BalanceData, Screen, ToastState } from './types';
@@ -70,6 +71,11 @@ export default function App() {
     if (balanceData && studentId) writeBalanceCache(studentId, balanceData);
   }, [balanceData, studentId]);
 
+  const screen: Screen =
+    location.pathname === '/history'   ? 'report' :
+    location.pathname === '/reports'   ? 'analytics' :
+    location.pathname === '/settings'  ? 'settings' : 'home';
+
   // Refetch balance + today's history every time user navigates to dashboard
   useEffect(() => {
     if (screen === 'home' && studentId) {
@@ -106,12 +112,9 @@ export default function App() {
     navigate('/');
   };
 
-  const screen: Screen =
-    location.pathname === '/history' ? 'report' :
-    location.pathname === '/settings' ? 'settings' : 'home';
-
   const handleNav = (s: Screen) => {
-    navigate(s === 'home' ? '/' : s === 'report' ? '/history' : '/settings');
+    const path = s === 'home' ? '/' : s === 'report' ? '/history' : s === 'analytics' ? '/reports' : '/settings';
+    navigate(path);
   };
 
   const showToast = (message: string, type: ToastState['type'] = 'success') => {
@@ -166,6 +169,9 @@ export default function App() {
           )}
           {screen === 'report' && (
             <HistoryScreen studentId={studentId} isMobile={isMobile} />
+          )}
+          {screen === 'analytics' && (
+            <AnalyticsScreen studentId={studentId} balanceData={balanceData ?? null} isMobile={isMobile} />
           )}
           {screen === 'settings' && (
             <SettingsScreen

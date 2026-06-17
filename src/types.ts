@@ -16,7 +16,7 @@ export interface HistoryItem {
   transaction_point: string;
 }
 
-export type Screen = 'home' | 'report' | 'settings';
+export type Screen = 'home' | 'report' | 'analytics' | 'settings';
 
 export interface ToastState {
   message: string;

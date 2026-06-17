@@ -1,4 +1,4 @@
-import { UtensilsCrossed, Home, Receipt, Settings } from 'lucide-react';
+import { UtensilsCrossed, Home, Receipt, BarChart3, Settings } from 'lucide-react';
 import type { Screen, BalanceData } from '../types';
 
 interface HeaderProps {
@@ -10,14 +10,16 @@ interface HeaderProps {
 }
 
 const NAV_ITEMS: { key: Screen; label: string }[] = [
-  { key: 'home', label: 'Dashboard' },
-  { key: 'report', label: 'History' },
-  { key: 'settings', label: 'Settings' },
+  { key: 'home',      label: 'Dashboard' },
+  { key: 'report',    label: 'History' },
+  { key: 'analytics', label: 'Analytics' },
+  { key: 'settings',  label: 'Settings' },
 ];
 
 const NAV_ICONS = {
   home: Home,
   report: Receipt,
+  analytics: BarChart3,
   settings: Settings,
 } as const;
 
