@@ -2,18 +2,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, CreditCard, LogOut, Mail } from 'lucide-react';
 import { resetPinApi } from '../api';
-import type { BalanceData, ToastState } from '../types';
+import { useAppContext } from '../context/AppContext';
 
-interface SettingsScreenProps {
-  studentId: string;
-  balanceData: BalanceData | null;
-  studentName: string;
-  onLogout: () => void;
-  onToast: (message: string, type: ToastState['type']) => void;
-  isMobile: boolean;
-}
-
-export function SettingsScreen({ studentId, balanceData, studentName, onLogout, onToast, isMobile }: SettingsScreenProps) {
+export function SettingsScreen() {
+  const { studentId, balanceData, studentName, logout, showToast, isMobile } = useAppContext();
   const [pinLoading, setPinLoading] = useState(false);
   const initial = (studentName[0] ?? 'A').toUpperCase();
   const firstName = balanceData?.firstname ?? studentName.split(' ')[0] ?? '';
@@ -26,9 +18,9 @@ export function SettingsScreen({ studentId, balanceData, studentName, onLogout, 
     setPinLoading(true);
     try {
       await resetPinApi(studentId);
-      onToast(`New PIN sent to ${email}`, 'success');
+      showToast(`New PIN sent to ${email}`, 'success');
     } catch (e) {
-      onToast(e instanceof Error ? e.message : 'Failed to reset PIN', 'error');
+      showToast(e instanceof Error ? e.message : 'Failed to reset PIN', 'error');
     } finally {
       setPinLoading(false);
     }
@@ -36,17 +28,11 @@ export function SettingsScreen({ studentId, balanceData, studentName, onLogout, 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Heading */}
       <div>
-        <h1 style={{ margin: 0, fontSize: 25, fontWeight: 800, letterSpacing: '-1px', lineHeight: 1.05 }}>
-          Settings
-        </h1>
-        <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#7A6A63', marginTop: 4 }}>
-          Manage your account and meal plan.
-        </div>
+        <h1 style={{ margin: 0, fontSize: 25, fontWeight: 800, letterSpacing: '-1px', lineHeight: 1.05 }}>Settings</h1>
+        <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#7A6A63', marginTop: 4 }}>Manage your account and meal plan.</div>
       </div>
 
-      {/* User card */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -60,8 +46,7 @@ export function SettingsScreen({ studentId, balanceData, studentName, onLogout, 
         <div style={{
           width: 58, height: 58, borderRadius: 18,
           background: 'linear-gradient(135deg, #E0233A, #8E0F18)',
-          color: '#fff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontWeight: 800, fontSize: 24, flexShrink: 0,
         }}>
           {initial}
@@ -73,11 +58,7 @@ export function SettingsScreen({ studentId, balanceData, studentName, onLogout, 
           </div>
           {balanceData && (
             <div style={{ marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <span style={{
-                fontSize: 11, fontWeight: 800, padding: '3px 8px',
-                background: '#F2E7DC', color: '#D81E2C', borderRadius: 99,
-                letterSpacing: '.3px',
-              }}>
+              <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 8px', background: '#F2E7DC', color: '#D81E2C', borderRadius: 99, letterSpacing: '.3px' }}>
                 {balanceData.meal_plan_name}
               </span>
               <span style={{
@@ -93,25 +74,12 @@ export function SettingsScreen({ studentId, balanceData, studentName, onLogout, 
         </div>
       </motion.div>
 
-      {/* Action cards */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
-        {/* Reset PIN */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          style={{
-            background: '#fff', border: '1px solid #ECE0D4',
-            borderRadius: 20, padding: 20,
-            boxShadow: '0 12px 26px -18px rgba(110,30,18,.26)',
-            display: 'flex', flexDirection: 'column',
-          }}
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+          style={{ background: '#fff', border: '1px solid #ECE0D4', borderRadius: 20, padding: 20, boxShadow: '0 12px 26px -18px rgba(110,30,18,.26)', display: 'flex', flexDirection: 'column' }}
         >
-          <div style={{
-            width: 44, height: 44, borderRadius: 13,
-            background: '#F2E7DC', color: '#D81E2C',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <div style={{ width: 44, height: 44, borderRadius: 13, background: '#F2E7DC', color: '#D81E2C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Lock size={20} />
           </div>
           <div style={{ fontWeight: 800, fontSize: '15.5px', marginTop: 14 }}>Reset PIN</div>
@@ -140,38 +108,17 @@ export function SettingsScreen({ studentId, balanceData, studentName, onLogout, 
                 Sending...
               </>
             ) : (
-              <>
-                <Mail size={16} />
-                Send new PIN
-              </>
+              <><Mail size={16} /> Send new PIN</>
             )}
           </button>
         </motion.div>
 
-        {/* Top up (coming soon) */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          style={{
-            background: '#fff', border: '1px solid #ECE0D4',
-            borderRadius: 20, padding: 20,
-            boxShadow: '0 12px 26px -18px rgba(110,30,18,.26)',
-            display: 'flex', flexDirection: 'column',
-            position: 'relative', overflow: 'hidden',
-          }}
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          style={{ background: '#fff', border: '1px solid #ECE0D4', borderRadius: 20, padding: 20, boxShadow: '0 12px 26px -18px rgba(110,30,18,.26)', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
         >
-          <div style={{
-            position: 'absolute', top: 14, right: 14,
-            fontSize: '10.5px', fontWeight: 800, letterSpacing: '.5px',
-            color: '#7A6A63', background: '#F2E7DC',
-            padding: '5px 9px', borderRadius: 99,
-          }}>SOON</div>
-          <div style={{
-            width: 44, height: 44, borderRadius: 13,
-            background: '#F2E7DC', color: '#7A6A63',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <div style={{ position: 'absolute', top: 14, right: 14, fontSize: '10.5px', fontWeight: 800, letterSpacing: '.5px', color: '#7A6A63', background: '#F2E7DC', padding: '5px 9px', borderRadius: 99 }}>SOON</div>
+          <div style={{ width: 44, height: 44, borderRadius: 13, background: '#F2E7DC', color: '#7A6A63', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CreditCard size={20} />
           </div>
           <div style={{ fontWeight: 800, fontSize: '15.5px', marginTop: 14, color: '#7A6A63' }}>Top up balance</div>
@@ -181,39 +128,25 @@ export function SettingsScreen({ studentId, balanceData, studentName, onLogout, 
           <div style={{ flex: 1 }} />
           <button
             disabled
-            style={{
-              marginTop: 16,
-              background: '#F2E7DC', color: '#7A6A63',
-              fontWeight: 700, fontSize: '13.5px',
-              padding: '13px 16px', borderRadius: 13,
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              border: 'none', cursor: 'not-allowed', fontFamily: 'inherit',
-            }}
+            style={{ marginTop: 16, background: '#F2E7DC', color: '#7A6A63', fontWeight: 700, fontSize: '13.5px', padding: '13px 16px', borderRadius: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, border: 'none', cursor: 'not-allowed', fontFamily: 'inherit' }}
           >
-            <CreditCard size={16} />
-            Top up
+            <CreditCard size={16} /> Top up
           </button>
         </motion.div>
       </div>
 
-      {/* Sign out */}
       <motion.button
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        onClick={onLogout}
+        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+        onClick={logout}
         style={{
-          width: '100%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           color: '#D81E2C', fontWeight: 700, fontSize: '13.5px',
           padding: '14px 16px', borderRadius: 13,
           border: '1px solid #ECE0D4', background: '#fff',
-          cursor: 'pointer', fontFamily: 'inherit',
-          transition: 'background .15s',
+          cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s',
         }}
       >
-        <LogOut size={16} />
-        Sign out
+        <LogOut size={16} /> Sign out
       </motion.button>
     </div>
   );

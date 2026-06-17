@@ -1,21 +1,13 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { CreditCard, Clock, Gauge, ArrowRight, RefreshCw } from 'lucide-react';
 import { Ring } from '../components/Ring';
 import { Skeleton, DashboardSkeleton } from '../components/Skeleton';
 import { fetchHistory } from '../api';
 import { todayISO, getGreeting, formatTime, dateLabel } from '../lib/utils';
-import type { BalanceData, HistoryItem, Screen } from '../types';
-
-interface DashboardScreenProps {
-  studentId: string;
-  balanceData: BalanceData | null;
-  loading: boolean;
-  error: string | null;
-  onRetry: () => void;
-  onNav: (s: Screen) => void;
-  isMobile: boolean;
-}
+import { useAppContext } from '../context/AppContext';
+import type { HistoryItem } from '../types';
 
 function StatCard({ icon, label, value, sub, valueColor, delay = 0 }: {
   icon: React.ReactNode;
@@ -49,9 +41,11 @@ function StatCard({ icon, label, value, sub, valueColor, delay = 0 }: {
   );
 }
 
-export function DashboardScreen({ studentId, balanceData, loading, error, onRetry, onNav, isMobile }: DashboardScreenProps) {
-  const today = todayISO();
+export function DashboardScreen() {
+  const { studentId, balanceData, loadingBalance: loading, balanceError: error, retryBalance, isMobile } = useAppContext();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const today = todayISO();
   const fetching = useIsFetching({ queryKey: ['balance', studentId] }) > 0;
 
   const handleRefresh = () => {
@@ -63,7 +57,7 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
     queryKey: ['history', studentId, today, today],
     queryFn: () => fetchHistory(studentId, today, today),
     enabled: !!balanceData,
-    staleTime: 60 * 60 * 1000,
+    staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
@@ -75,7 +69,7 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
         <div style={{ fontSize: 15, fontWeight: 700 }}>Failed to load</div>
         <div style={{ fontSize: 13, color: '#7A6A63', fontWeight: 600, marginTop: 4 }}>{error}</div>
         <button
-          onClick={onRetry}
+          onClick={retryBalance}
           style={{
             marginTop: 20, display: 'inline-flex', alignItems: 'center', gap: 8,
             background: '#D81E2C', color: '#fff', fontWeight: 700, fontSize: 14,
@@ -161,7 +155,7 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
           </div>
           {!isMobile && (
             <button
-              onClick={() => onNav('report')}
+              onClick={() => navigate('/history')}
               style={{
                 alignSelf: 'flex-start', marginTop: 2,
                 display: 'inline-flex', alignItems: 'center', gap: 7,
@@ -190,7 +184,7 @@ export function DashboardScreen({ studentId, balanceData, loading, error, onRetr
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px' }}>
           <div style={{ fontWeight: 800, fontSize: 15 }}>Recent activity</div>
-          <button onClick={() => onNav('report')} style={{ fontSize: '12.5px', fontWeight: 700, color: '#D81E2C', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={() => navigate('/history')} style={{ fontSize: '12.5px', fontWeight: 700, color: '#D81E2C', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
             See all
           </button>
         </div>

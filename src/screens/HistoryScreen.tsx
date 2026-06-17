@@ -5,14 +5,10 @@ import { RefreshCw } from 'lucide-react';
 import { fetchHistory } from '../api';
 import { todayISO, yesterdayISO, dateLabel, formatTime } from '../lib/utils';
 import { HistorySkeleton } from '../components/Skeleton';
+import { useAppContext } from '../context/AppContext';
 import type { HistoryItem } from '../types';
 
 type Filter = 'today' | 'yesterday' | 'last2' | 'date' | 'custom';
-
-interface HistoryScreenProps {
-  studentId: string;
-  isMobile: boolean;
-}
 
 const CHIPS: { key: Filter; label: string }[] = [
   { key: 'today', label: 'Today' },
@@ -32,7 +28,8 @@ function chipStyle(active: boolean): React.CSSProperties {
   };
 }
 
-export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenProps) {
+export function HistoryScreen() {
+  const { studentId } = useAppContext();
   const [filter, setFilter] = useState<Filter>('today');
   const [customDate, setCustomDate] = useState('');
   const [customFrom, setCustomFrom] = useState('');
@@ -42,11 +39,11 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
     const today = todayISO();
     const yesterday = yesterdayISO();
     switch (filter) {
-      case 'today': return { startDate: today, endDate: today, rangeLabel: 'Today' };
-      case 'yesterday': return { startDate: yesterday, endDate: yesterday, rangeLabel: 'Yesterday' };
-      case 'last2': return { startDate: yesterday, endDate: today, rangeLabel: 'Last 2 days' };
-      case 'date': return { startDate: customDate || today, endDate: customDate || today, rangeLabel: customDate ? dateLabel(customDate) : 'Pick a date' };
-      case 'custom': return { startDate: customFrom || today, endDate: customTo || today, rangeLabel: 'Custom range' };
+      case 'today':     return { startDate: today,        endDate: today,        rangeLabel: 'Today' };
+      case 'yesterday': return { startDate: yesterday,    endDate: yesterday,    rangeLabel: 'Yesterday' };
+      case 'last2':     return { startDate: yesterday,    endDate: today,        rangeLabel: 'Last 2 days' };
+      case 'date':      return { startDate: customDate || today, endDate: customDate || today, rangeLabel: customDate ? dateLabel(customDate) : 'Pick a date' };
+      case 'custom':    return { startDate: customFrom || today, endDate: customTo || today, rangeLabel: 'Custom range' };
     }
   }, [filter, customDate, customFrom, customTo]);
 
@@ -95,16 +92,12 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
 
       {filter === 'date' && (
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
           style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #ECE0D4', borderRadius: 18, padding: '14px 18px' }}
         >
           <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px', flexShrink: 0 }}>DATE</span>
           <input
-            type="date"
-            value={customDate}
-            onChange={e => setCustomDate(e.target.value)}
-            max={todayISO()}
+            type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} max={todayISO()}
             style={{ background: '#F2E7DC', border: '1.5px solid #ECE0D4', borderRadius: 12, padding: '9px 12px', fontWeight: 600, fontSize: 13, color: '#1C1413', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}
           />
         </motion.div>
@@ -112,25 +105,17 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
 
       {filter === 'custom' && (
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
           style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, background: '#fff', border: '1px solid #ECE0D4', borderRadius: 18, padding: '14px 18px' }}
         >
           <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px', flexShrink: 0 }}>FROM</span>
           <input
-            type="date"
-            value={customFrom}
-            onChange={e => setCustomFrom(e.target.value)}
-            max={customTo || todayISO()}
+            type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} max={customTo || todayISO()}
             style={{ background: '#F2E7DC', border: '1.5px solid #ECE0D4', borderRadius: 12, padding: '9px 12px', fontWeight: 600, fontSize: 13, color: '#1C1413', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}
           />
           <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#7A6A63', letterSpacing: '.3px', flexShrink: 0 }}>TO</span>
           <input
-            type="date"
-            value={customTo}
-            onChange={e => setCustomTo(e.target.value)}
-            min={customFrom || undefined}
-            max={todayISO()}
+            type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} min={customFrom || undefined} max={todayISO()}
             style={{ background: '#F2E7DC', border: '1.5px solid #ECE0D4', borderRadius: 12, padding: '9px 12px', fontWeight: 600, fontSize: 13, color: '#1C1413', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}
           />
         </motion.div>
@@ -161,8 +146,7 @@ export function HistoryScreen({ studentId, isMobile: _isMobile }: HistoryScreenP
         </div>
       ) : groups.length === 0 ? (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           style={{ textAlign: 'center', padding: '52px 20px', background: '#fff', border: '1px dashed #ECE0D4', borderRadius: 20 }}
         >
           <div style={{ fontWeight: 700, fontSize: 15 }}>No purchases in this range</div>
