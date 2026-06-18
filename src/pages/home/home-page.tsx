@@ -162,7 +162,7 @@ export function HomePage() {
         <StatCard
           icon={<CreditCard size={16} />}
           label="Total loaded"
-          value={`GHS ${totalBalance.toFixed(0)}`}
+          value={`GHS ${totalBalance.toFixed(2)}`}
           sub="on your meal plan"
           delay={0.1}
           fetching={fetching}
@@ -170,7 +170,7 @@ export function HomePage() {
         <StatCard
           icon={<Clock size={16} />}
           label="Spent today"
-          value={`GHS ${spentToday.toFixed(0)}`}
+          value={`GHS ${spentToday.toFixed(2)}`}
           sub={`${todayHistory.length} purchase${todayHistory.length !== 1 ? 's' : ''} today`}
           valueColor="#D81E2C"
           delay={0.17}
@@ -179,7 +179,7 @@ export function HomePage() {
         <StatCard
           icon={<Gauge size={16} />}
           label="Daily limit"
-          value={`GHS ${dailyLimit.toFixed(0)}`}
+          value={`GHS ${dailyLimit.toFixed(2)}`}
           sub="resets at midnight"
           delay={0.24}
           fetching={fetching}

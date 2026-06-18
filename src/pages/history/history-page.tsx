@@ -139,7 +139,7 @@ export function HistoryPage() {
               letterSpacing: '-1px',
             }}
           >
-            GHS {filteredTotal.toFixed(0)}
+            GHS {filteredTotal.toFixed(2)}
           </div>
         </div>
       </div>

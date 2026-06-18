@@ -75,8 +75,8 @@ export function BalanceRingCard({
           <div>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#7A6A63' }}>
               You've used{' '}
-              <b style={{ color: '#1C1413' }}>GHS {spentToday.toFixed(0)}</b> of your{' '}
-              <b style={{ color: '#1C1413' }}>GHS {dailyLimit.toFixed(0)}</b> daily limit
+              <b style={{ color: '#1C1413' }}>GHS {spentToday.toFixed(2)}</b> of your{' '}
+              <b style={{ color: '#1C1413' }}>GHS {dailyLimit.toFixed(2)}</b> daily limit
             </div>
             <div
               style={{

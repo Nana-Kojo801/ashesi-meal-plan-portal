@@ -58,7 +58,7 @@ export function Ring({ size, strokeWidth, fraction, balance }: RingProps) {
             color: '#1C1413',
           }}
         >
-          {balance.toFixed(0)}
+          {balance.toFixed(2)}
         </div>
         {lg && (
           <div style={{ fontSize: '12px', fontWeight: 600, color: '#7A6A63', maxWidth: '120px', lineHeight: 1.2 }}>

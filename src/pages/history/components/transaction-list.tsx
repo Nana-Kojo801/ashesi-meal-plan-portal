@@ -89,7 +89,7 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Transacti
           >
             <div style={{ fontWeight: 800, fontSize: 13, letterSpacing: '.2px' }}>{group.label}</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#7A6A63' }}>
-              GHS {group.total.toFixed(0)}
+              GHS {group.total.toFixed(2)}
             </div>
           </div>
           <div
@@ -140,7 +140,7 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Transacti
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  GHS {(tx.cost * tx.quantity).toFixed(0)}
+                  GHS {(tx.cost * tx.quantity).toFixed(2)}
                 </div>
               </motion.div>
             ))}

@@ -20,7 +20,7 @@ export function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
       }}
     >
       <div style={{ color: '#7A6A63', marginBottom: 2 }}>{label}</div>
-      <div style={{ color: '#D81E2C' }}>GHS {payload[0].value.toFixed(0)}</div>
+      <div style={{ color: '#D81E2C' }}>GHS {payload[0].value.toFixed(2)}</div>
     </div>
   );
 }

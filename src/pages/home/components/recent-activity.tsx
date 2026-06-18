@@ -128,7 +128,7 @@ export function RecentActivity({ items, isLoading, fetching }: RecentActivityPro
                   whiteSpace: 'nowrap',
                 }}
               >
-                −GHS {(tx.cost * tx.quantity).toFixed(0)}
+                −GHS {(tx.cost * tx.quantity).toFixed(2)}
               </div>
             </motion.div>
           ))
