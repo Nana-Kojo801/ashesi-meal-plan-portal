@@ -67,10 +67,10 @@ export function HomePage() {
 
   const greeting = getGreeting();
   const firstName = balanceData.firstname;
-  const dailyBalance = balanceData.current_balance;
   const dailyLimit = balanceData.daily_spending_limit;
   const totalBalance = balanceData.amount;
-  const spentToday = Math.max(0, dailyLimit - dailyBalance);
+  const spentToday = todayHistory.reduce((s, x) => s + x.cost * x.quantity, 0);
+  const dailyBalance = Math.max(0, dailyLimit - spentToday);
   const fraction = dailyLimit > 0 ? dailyBalance / dailyLimit : 0;
   const ringSize = isMobile ? 132 : 200;
   const ringSW = isMobile ? 12 : 17;

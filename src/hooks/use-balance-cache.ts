@@ -1,7 +1,7 @@
 import type { BalanceData } from '../types';
 
 const CACHE_KEY = 'ashesiMealsBalance';
-/** Cache TTL: 1 hour. Avoids triggering a fresh OTP-sending API call on every app open. */
+/** Cache TTL: 1 hour. Avoids a network round-trip on every app open. */
 export const BALANCE_CACHE_TTL = 60 * 60 * 1000;
 
 interface CacheEntry {

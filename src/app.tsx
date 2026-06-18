@@ -55,7 +55,6 @@ export default function App() {
           : 'home';
 
   // Only refetch balance on dashboard visit if data is older than 1 minute.
-  // Avoids triggering a new OTP email on every tab switch.
   useEffect(() => {
     if (screen === 'home' && studentId) {
       const state = queryClient.getQueryState(['balance', studentId]);
