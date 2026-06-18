@@ -17,7 +17,7 @@ export function HomePage() {
   const { studentId } = useSessionStore();
   const queryClient = useQueryClient();
   const today = todayISO();
-  const fetching = useIsFetching({ queryKey: ['balance', studentId] }) > 0;
+  const isFetchingBalance = useIsFetching({ queryKey: ['balance', studentId] }) > 0;
 
   const handleRefresh = () => {
     void queryClient.invalidateQueries({ queryKey: ['balance', studentId] });
@@ -31,6 +31,8 @@ export function HomePage() {
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });
+
+  const fetching = isFetchingBalance || isHistoryLoading;
 
   if (loading && !balanceData) return <DashboardSkeleton isMobile={isMobile} />;
 
