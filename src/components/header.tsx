@@ -1,5 +1,6 @@
 import { UtensilsCrossed, Home, Receipt, BarChart3, Settings } from 'lucide-react';
 import type { Screen, BalanceData } from '../types';
+import { fmtAmount } from '../lib/utils';
 
 interface HeaderProps {
   screen: Screen;
@@ -141,7 +142,7 @@ export function Header({ screen, onNav, balanceData, studentInitial, isMobile }:
             </div>
             <div style={{ lineHeight: 1.05 }}>
               <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, letterSpacing: '-.3px' }}>
-                GHS {dailyBalance.toFixed(2)}
+                GHS {fmtAmount(dailyBalance)}
               </div>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#7A6A63', letterSpacing: '.2px' }}>
                 LEFT TODAY

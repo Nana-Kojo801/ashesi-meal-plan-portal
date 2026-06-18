@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
 import { HistorySkeleton } from '../../../components/skeleton';
-import { formatTime } from '../../../lib/utils';
+import { formatTime, fmtAmount } from '../../../lib/utils';
 import type { HistoryItem } from '../../../types';
 
 interface TransactionGroup {
@@ -89,7 +89,7 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Transacti
           >
             <div style={{ fontWeight: 800, fontSize: 13, letterSpacing: '.2px' }}>{group.label}</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#7A6A63' }}>
-              GHS {group.total.toFixed(2)}
+              GHS {fmtAmount(group.total)}
             </div>
           </div>
           <div
@@ -140,7 +140,7 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Transacti
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  GHS {(tx.cost * tx.quantity).toFixed(2)}
+                  GHS {fmtAmount(tx.cost * tx.quantity)}
                 </div>
               </motion.div>
             ))}

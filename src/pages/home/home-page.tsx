@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { CreditCard, Clock, Gauge, RefreshCw } from 'lucide-react';
 import { DashboardSkeleton } from '../../components/skeleton';
 import { fetchHistory } from '../../api';
-import { todayISO, getGreeting } from '../../lib/utils';
+import { todayISO, getGreeting, fmtAmount } from '../../lib/utils';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
 import { BalanceRingCard } from './components/balance-ring-card';
@@ -162,7 +162,7 @@ export function HomePage() {
         <StatCard
           icon={<CreditCard size={16} />}
           label="Total loaded"
-          value={`GHS ${totalBalance.toFixed(2)}`}
+          value={`GHS ${fmtAmount(totalBalance)}`}
           sub="on your meal plan"
           delay={0.1}
           fetching={fetching}
@@ -170,7 +170,7 @@ export function HomePage() {
         <StatCard
           icon={<Clock size={16} />}
           label="Spent today"
-          value={`GHS ${spentToday.toFixed(2)}`}
+          value={`GHS ${fmtAmount(spentToday)}`}
           sub={`${todayHistory.length} purchase${todayHistory.length !== 1 ? 's' : ''} today`}
           valueColor="#D81E2C"
           delay={0.17}
@@ -179,7 +179,7 @@ export function HomePage() {
         <StatCard
           icon={<Gauge size={16} />}
           label="Daily limit"
-          value={`GHS ${dailyLimit.toFixed(2)}`}
+          value={`GHS ${fmtAmount(dailyLimit)}`}
           sub="resets at midnight"
           delay={0.24}
           fetching={fetching}

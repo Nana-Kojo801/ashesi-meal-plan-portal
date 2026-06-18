@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '../../../components/skeleton';
 import { FetchingOutline } from './fetching-outline';
-import { dateLabel, formatTime } from '../../../lib/utils';
+import { dateLabel, formatTime, fmtAmount } from '../../../lib/utils';
 import type { HistoryItem } from '../../../types';
 
 interface RecentActivityProps {
@@ -128,7 +128,7 @@ export function RecentActivity({ items, isLoading, fetching }: RecentActivityPro
                   whiteSpace: 'nowrap',
                 }}
               >
-                −GHS {(tx.cost * tx.quantity).toFixed(2)}
+                −GHS {fmtAmount(tx.cost * tx.quantity)}
               </div>
             </motion.div>
           ))

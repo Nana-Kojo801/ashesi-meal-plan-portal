@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchHistory } from '../../api';
-import { todayISO, yesterdayISO, dateLabel } from '../../lib/utils';
+import { todayISO, yesterdayISO, dateLabel, fmtAmount } from '../../lib/utils';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
 import { FilterChips } from './components/filter-chips';
@@ -139,7 +139,7 @@ export function HistoryPage() {
               letterSpacing: '-1px',
             }}
           >
-            GHS {filteredTotal.toFixed(2)}
+            GHS {fmtAmount(filteredTotal)}
           </div>
         </div>
       </div>
