@@ -7,10 +7,20 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Build output
 node_modules
 dist
 dist-ssr
 *.local
+
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.*.local
+.env.production
+
+# TypeScript incremental build cache
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +32,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# PWA generated assets
+dev-dist
+public/sw.js
+public/workbox-*.js
+
+# Internal dev documents — not for public repos
+REFACTOR_REPORT.md
+

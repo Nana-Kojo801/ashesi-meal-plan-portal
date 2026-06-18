@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { CreditCard, Clock, Gauge, RefreshCw } from 'lucide-react';
 import { DashboardSkeleton } from '../../components/skeleton';
@@ -16,7 +15,6 @@ export function HomePage() {
   const { balanceData, loadingBalance: loading, balanceError: error, retryBalance, isMobile } =
     useAppContext();
   const { studentId } = useSessionStore();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const today = todayISO();
   const fetching = useIsFetching({ queryKey: ['balance', studentId] }) > 0;
