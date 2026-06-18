@@ -1,15 +1,21 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import './index.css'
-import App from './App.tsx'
-import { DashboardScreen } from './screens/DashboardScreen.tsx'
-import { HistoryScreen } from './screens/HistoryScreen.tsx'
-import { AnalyticsScreen } from './screens/AnalyticsScreen.tsx'
-import { SettingsScreen } from './screens/SettingsScreen.tsx'
-import { ErrorPage } from './pages/ErrorPage.tsx'
-import { NotFoundPage } from './pages/NotFoundPage.tsx'
+import { StrictMode, lazy, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import './index.css';
+import App from './app';
+import { ErrorBoundary } from './components/error-boundary';
+import { ErrorPage } from './pages/error/error-page';
+import { NotFoundPage } from './pages/not-found/not-found-page';
+import { HomePage } from './pages/home/home-page';
+import { HistoryPage } from './pages/history/history-page';
+import { SettingsPage } from './pages/settings/settings-page';
+import { HistorySkeleton } from './components/skeleton';
+
+// Reports page is lazy-loaded: recharts adds ~200 KB and is only needed on the /reports route.
+const ReportsPage = lazy(() =>
+  import('./pages/reports/reports-page').then((m) => ({ default: m.ReportsPage })),
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,21 +25,30 @@ const queryClient = new QueryClient({
       retry: 2,
     },
   },
-})
+});
 
 const router = createBrowserRouter([
   {
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
-      { path: '/',         element: <DashboardScreen /> },
-      { path: '/history',  element: <HistoryScreen /> },
-      { path: '/reports',  element: <AnalyticsScreen /> },
-      { path: '/settings', element: <SettingsScreen /> },
-      { path: '*',         element: <NotFoundPage /> },
+      { path: '/', element: <ErrorBoundary><HomePage /></ErrorBoundary> },
+      { path: '/history', element: <ErrorBoundary><HistoryPage /></ErrorBoundary> },
+      {
+        path: '/reports',
+        element: (
+          <ErrorBoundary>
+            <Suspense fallback={<HistorySkeleton />}>
+              <ReportsPage />
+            </Suspense>
+          </ErrorBoundary>
+        ),
+      },
+      { path: '/settings', element: <ErrorBoundary><SettingsPage /></ErrorBoundary> },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
-])
+]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -41,4 +56,4 @@ createRoot(document.getElementById('root')!).render(
       <RouterProvider router={router} />
     </QueryClientProvider>
   </StrictMode>,
-)
+);
