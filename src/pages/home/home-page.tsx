@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { CreditCard, Clock, Gauge, RefreshCw } from 'lucide-react';
 import { DashboardSkeleton } from '../../components/skeleton';
 import { fetchHistory } from '../../api';
@@ -24,15 +25,34 @@ export function HomePage() {
     void queryClient.invalidateQueries({ queryKey: ['history', studentId] });
   };
 
+  const historyCacheKey = `todayHistory_${studentId ?? ''}_${today}`;
+  const historyEnabled  = !!balanceData && !!studentId;
+
   const { data: todayHistory = [], isLoading: isHistoryLoading } = useQuery<HistoryItem[]>({
     queryKey: ['history', studentId, today, today],
     queryFn: () => fetchHistory(studentId!, today, today),
-    enabled: !!balanceData && !!studentId,
+    enabled: historyEnabled,
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
+    // Show cached items immediately while fresh fetch runs in background
+    initialData: () => {
+      try {
+        const raw = localStorage.getItem(historyCacheKey);
+        return raw ? (JSON.parse(raw) as HistoryItem[]) : undefined;
+      } catch { return undefined; }
+    },
+    initialDataUpdatedAt: 0, // always stale → background refetch triggers immediately
   });
 
+  // Persist fresh history so next open shows cached data
+  useEffect(() => {
+    if (historyEnabled && !isHistoryLoading && todayHistory.length >= 0) {
+      try { localStorage.setItem(historyCacheKey, JSON.stringify(todayHistory)); } catch {}
+    }
+  }, [historyEnabled, isHistoryLoading, todayHistory, historyCacheKey]);
+
   const fetching = isFetchingBalance || isHistoryLoading;
+  const spentToday = todayHistory.reduce((s, x) => s + x.cost * x.quantity, 0);
 
   if (loading && !balanceData) return <DashboardSkeleton isMobile={isMobile} />;
 
@@ -71,7 +91,6 @@ export function HomePage() {
   const firstName = balanceData.firstname;
   const dailyLimit = balanceData.daily_spending_limit;
   const totalBalance = balanceData.amount;
-  const spentToday = todayHistory.reduce((s, x) => s + x.cost * x.quantity, 0);
   const dailyBalance = Math.max(0, dailyLimit - spentToday);
   const fraction = dailyLimit > 0 ? dailyBalance / dailyLimit : 0;
   const ringSize = isMobile ? 132 : 200;
