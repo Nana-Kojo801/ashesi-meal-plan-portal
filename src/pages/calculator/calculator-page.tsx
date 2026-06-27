@@ -226,29 +226,60 @@ export function CalculatorPage() {
                       <div style={{ minHeight: 0, overflow: 'hidden' }}>
                         <div style={{ border: `1px solid ${BORDER}`, borderTop: 'none', borderRadius: '0 0 14px 14px', overflow: 'hidden' }}>
                           {items.map((ci, idx) => (
-                            <div key={ck(ci.cafe, ci.name)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: idx % 2 === 0 ? '#fff' : '#FAFAF8', borderBottom: idx < items.length - 1 ? `1px solid ${BORDER}` : 'none' }}>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ci.name}</div>
-                                <div style={{ fontSize: 11, color: BROWN, fontWeight: 600, marginTop: 2 }}>GHS {fmtAmount(ci.price)} each</div>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-                                <button onClick={() => decItem(ci.cafe, ci.name)}
-                                  style={{ width: 26, height: 26, borderRadius: 8, background: '#FBF0F0', border: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                                  <Minus size={10} color={RED} />
-                                </button>
-                                <span style={{ fontWeight: 800, fontSize: 13, color: INK, minWidth: 16, textAlign: 'center' }}>{ci.qty}</span>
-                                <button onClick={() => addItem(ci.cafe, ci)}
-                                  style={{ width: 26, height: 26, borderRadius: 8, background: RED, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                                  <Plus size={10} color="#fff" />
-                                </button>
-                                <button onClick={() => removeItem(ci.cafe, ci.name)}
-                                  style={{ width: 26, height: 26, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                                  <Trash2 size={12} color={BROWN} />
-                                </button>
-                              </div>
-                              <span style={{ fontWeight: 800, fontSize: 13, color: INK, minWidth: 56, textAlign: 'right' }}>
-                                GHS {fmtAmount(ci.price * ci.qty)}
-                              </span>
+                            <div key={ck(ci.cafe, ci.name)} style={{ padding: '10px 14px', background: idx % 2 === 0 ? '#fff' : '#FAFAF8', borderBottom: idx < items.length - 1 ? `1px solid ${BORDER}` : 'none' }}>
+                              {isMobile ? (
+                                // Mobile: two-row layout
+                                <>
+                                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 7 }}>
+                                    <div style={{ fontWeight: 700, fontSize: 13, color: INK, flex: 1, minWidth: 0, paddingRight: 8, lineHeight: 1.3 }}>{ci.name}</div>
+                                    <span style={{ fontWeight: 800, fontSize: 13, color: INK, flexShrink: 0 }}>GHS {fmtAmount(ci.price * ci.qty)}</span>
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <span style={{ fontSize: 11, color: BROWN, fontWeight: 600 }}>GHS {fmtAmount(ci.price)} each</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                      <button onClick={() => decItem(ci.cafe, ci.name)}
+                                        style={{ width: 30, height: 30, borderRadius: 9, background: '#FBF0F0', border: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                        <Minus size={11} color={RED} />
+                                      </button>
+                                      <span style={{ fontWeight: 800, fontSize: 14, color: INK, minWidth: 18, textAlign: 'center' }}>{ci.qty}</span>
+                                      <button onClick={() => addItem(ci.cafe, ci)}
+                                        style={{ width: 30, height: 30, borderRadius: 9, background: RED, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                        <Plus size={11} color="#fff" />
+                                      </button>
+                                      <button onClick={() => removeItem(ci.cafe, ci.name)}
+                                        style={{ width: 30, height: 30, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                        <Trash2 size={13} color={BROWN} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                // Desktop: single-row layout
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ci.name}</div>
+                                    <div style={{ fontSize: 11, color: BROWN, fontWeight: 600, marginTop: 2 }}>GHS {fmtAmount(ci.price)} each</div>
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                                    <button onClick={() => decItem(ci.cafe, ci.name)}
+                                      style={{ width: 26, height: 26, borderRadius: 8, background: '#FBF0F0', border: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                      <Minus size={10} color={RED} />
+                                    </button>
+                                    <span style={{ fontWeight: 800, fontSize: 13, color: INK, minWidth: 16, textAlign: 'center' }}>{ci.qty}</span>
+                                    <button onClick={() => addItem(ci.cafe, ci)}
+                                      style={{ width: 26, height: 26, borderRadius: 8, background: RED, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                      <Plus size={10} color="#fff" />
+                                    </button>
+                                    <button onClick={() => removeItem(ci.cafe, ci.name)}
+                                      style={{ width: 26, height: 26, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                      <Trash2 size={12} color={BROWN} />
+                                    </button>
+                                  </div>
+                                  <span style={{ fontWeight: 800, fontSize: 13, color: INK, minWidth: 56, textAlign: 'right' }}>
+                                    GHS {fmtAmount(ci.price * ci.qty)}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
