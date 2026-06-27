@@ -1,4 +1,4 @@
-import { UtensilsCrossed, Home, Receipt, BarChart3, Settings } from 'lucide-react';
+import { UtensilsCrossed, Home, Receipt, BarChart3, Calculator, Settings } from 'lucide-react';
 import type { Screen, BalanceData } from '../types';
 import { fmtAmount } from '../lib/utils';
 
@@ -11,16 +11,18 @@ interface HeaderProps {
 }
 
 const NAV_ITEMS: { key: Screen; label: string }[] = [
-  { key: 'home',      label: 'Dashboard' },
-  { key: 'report',    label: 'History' },
-  { key: 'analytics', label: 'Analytics' },
-  { key: 'settings',  label: 'Settings' },
+  { key: 'home',       label: 'Dashboard' },
+  { key: 'report',     label: 'History' },
+  { key: 'analytics',  label: 'Analytics' },
+  { key: 'calculator', label: 'Calculator' },
+  { key: 'settings',   label: 'Settings' },
 ];
 
 const NAV_ICONS = {
   home: Home,
   report: Receipt,
   analytics: BarChart3,
+  calculator: Calculator,
   settings: Settings,
 } as const;
 

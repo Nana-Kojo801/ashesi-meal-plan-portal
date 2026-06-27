@@ -1,4 +1,4 @@
-import { Home, Receipt, BarChart3, Settings } from 'lucide-react';
+import { Home, Receipt, BarChart3, Calculator, Settings } from 'lucide-react';
 import type { Screen } from '../types';
 
 interface BottomNavProps {
@@ -7,10 +7,11 @@ interface BottomNavProps {
 }
 
 const ITEMS: { key: Screen; label: string; Icon: typeof Home }[] = [
-  { key: 'home',      label: 'Home',      Icon: Home },
-  { key: 'report',    label: 'History',   Icon: Receipt },
-  { key: 'analytics', label: 'Analytics', Icon: BarChart3 },
-  { key: 'settings',  label: 'Settings',  Icon: Settings },
+  { key: 'home',       label: 'Home',       Icon: Home },
+  { key: 'report',     label: 'History',    Icon: Receipt },
+  { key: 'analytics',  label: 'Analytics',  Icon: BarChart3 },
+  { key: 'calculator', label: 'Calculator', Icon: Calculator },
+  { key: 'settings',   label: 'Settings',   Icon: Settings },
 ];
 
 export function BottomNav({ screen, onNav }: BottomNavProps) {

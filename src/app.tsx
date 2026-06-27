@@ -50,9 +50,11 @@ export default function App() {
       ? 'report'
       : location.pathname === '/reports'
         ? 'analytics'
-        : location.pathname === '/settings'
-          ? 'settings'
-          : 'home';
+        : location.pathname === '/calculator'
+          ? 'calculator'
+          : location.pathname === '/settings'
+            ? 'settings'
+            : 'home';
 
   // Only refetch balance on dashboard visit if data is older than 1 minute.
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function App() {
 
   const handleNav = (s: Screen) => {
     const path =
-      s === 'home' ? '/' : s === 'report' ? '/history' : s === 'analytics' ? '/reports' : '/settings';
+      s === 'home' ? '/' : s === 'report' ? '/history' : s === 'analytics' ? '/reports' : s === 'calculator' ? '/calculator' : '/settings';
     navigate(path);
   };
 

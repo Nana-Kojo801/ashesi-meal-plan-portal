@@ -17,6 +17,10 @@ const ReportsPage = lazy(() =>
   import('./pages/reports/reports-page').then((m) => ({ default: m.ReportsPage })),
 );
 
+const CalculatorPage = lazy(() =>
+  import('./pages/calculator/calculator-page').then((m) => ({ default: m.CalculatorPage })),
+);
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -40,6 +44,16 @@ const router = createBrowserRouter([
           <ErrorBoundary>
             <Suspense fallback={<HistorySkeleton />}>
               <ReportsPage />
+            </Suspense>
+          </ErrorBoundary>
+        ),
+      },
+      {
+        path: '/calculator',
+        element: (
+          <ErrorBoundary>
+            <Suspense fallback={<HistorySkeleton />}>
+              <CalculatorPage />
             </Suspense>
           </ErrorBoundary>
         ),
