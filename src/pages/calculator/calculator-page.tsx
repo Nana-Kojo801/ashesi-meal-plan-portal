@@ -228,17 +228,14 @@ export function CalculatorPage() {
                           {items.map((ci, idx) => (
                             <div key={ck(ci.cafe, ci.name)} style={{ padding: '10px 14px', background: idx % 2 === 0 ? '#fff' : '#FAFAF8', borderBottom: idx < items.length - 1 ? `1px solid ${BORDER}` : 'none' }}>
                               {isMobile ? (
-                                // Mobile: two-row layout, delete top-right away from qty controls
+                                // Mobile: two-row layout
                                 <>
                                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 7 }}>
                                     <div style={{ fontWeight: 700, fontSize: 13, color: INK, flex: 1, minWidth: 0, paddingRight: 8, lineHeight: 1.3 }}>{ci.name}</div>
-                                    <button onClick={() => removeItem(ci.cafe, ci.name)}
-                                      style={{ width: 28, height: 28, background: '#F5EDE5', border: 'none', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                                      <Trash2 size={13} color={BROWN} />
-                                    </button>
+                                    <span style={{ fontWeight: 800, fontSize: 13, color: INK, flexShrink: 0 }}>GHS {fmtAmount(ci.price * ci.qty)}</span>
                                   </div>
                                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <span style={{ fontSize: 11, color: BROWN, fontWeight: 600 }}>GHS {fmtAmount(ci.price)} each · <span style={{ color: INK, fontWeight: 800 }}>GHS {fmtAmount(ci.price * ci.qty)}</span></span>
+                                    <span style={{ fontSize: 11, color: BROWN, fontWeight: 600 }}>GHS {fmtAmount(ci.price)} each</span>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                       <button onClick={() => decItem(ci.cafe, ci.name)}
                                         style={{ width: 30, height: 30, borderRadius: 9, background: '#FBF0F0', border: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -248,6 +245,11 @@ export function CalculatorPage() {
                                       <button onClick={() => addItem(ci.cafe, ci)}
                                         style={{ width: 30, height: 30, borderRadius: 9, background: RED, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                                         <Plus size={11} color="#fff" />
+                                      </button>
+                                      <div style={{ width: 1, height: 20, background: BORDER, margin: '0 2px' }} />
+                                      <button onClick={() => removeItem(ci.cafe, ci.name)}
+                                        style={{ width: 30, height: 30, borderRadius: 9, background: 'transparent', border: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                        <Trash2 size={13} color={BROWN} />
                                       </button>
                                     </div>
                                   </div>
