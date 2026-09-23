@@ -192,7 +192,12 @@ export function CalculatorPage() {
       <AnimatePresence>
         {cartCount > 0 && isMobile && createPortal(
           <motion.button className="cart-fab" onClick={() => setCartOpen(true)} initial={{ opacity: 0, y: 25, scale: .9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: .9 }}>
-            <ShoppingCart size={18} /><strong>{cartCount} item{cartCount === 1 ? '' : 's'}</strong><span>GHS {fmtAmount(cartTotal)}</span>
+            <span className="cart-fab-main"><ShoppingCart size={28} /><span><small>{cartCount} item{cartCount === 1 ? '' : 's'}</small><strong>GHS {fmtAmount(cartTotal)}</strong></span><ChevronRight size={20} /></span>
+            <span className="cart-fab-summary">
+              <span><small>Balance</small><strong>GHS {fmtAmount(balance)}</strong></span>
+              <span><small>Total</small><strong>GHS {fmtAmount(cartTotal)}</strong></span>
+              <span><small>After</small><strong>GHS {fmtAmount(afterPurchase)}</strong></span>
+            </span>
           </motion.button>,
           document.body,
         )}
