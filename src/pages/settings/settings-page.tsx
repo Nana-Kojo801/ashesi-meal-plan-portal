@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, LogOut, Mail, ShieldCheck } from 'lucide-react';
+import { CreditCard, LogOut, Mail } from 'lucide-react';
+import { SettingsSkeleton } from '../../components/skeleton';
 import { resetPin } from '../../api';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
 
 export function SettingsPage() {
-  const { balanceData, studentName, logout, showToast } = useAppContext();
+  const { balanceData, loadingBalance, studentName, logout, showToast } = useAppContext();
   const { studentId } = useSessionStore();
   const [pinLoading, setPinLoading] = useState(false);
   const initial = (studentName[0] ?? 'A').toUpperCase();
@@ -28,8 +29,10 @@ export function SettingsPage() {
     }
   };
 
+  if (loadingBalance && !balanceData) return <SettingsSkeleton />;
+
   return (
-    <div className="page">
+    <div className="page settings-page">
       <header className="page-heading">
         <h1 className="page-title">Settings</h1>
         <p className="page-subtitle">Manage your account and meal plan.</p>
@@ -38,18 +41,18 @@ export function SettingsPage() {
         <motion.div className="profile-initial" initial={{ scale: .7, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 230 }}>{initial}</motion.div>
         <div>
           <h2 className="profile-name">{studentName}</h2>
-          <div className="profile-details"><span>Student ID {studentId}</span><span>{email}</span></div>
+          <div className="profile-details"><span className="profile-id">Student ID <b>{studentId}</b></span><span className="profile-email">{email}</span></div>
         </div>
-        <div>
-          <div style={{ fontWeight: 800, marginBottom: 9 }}>{balanceData?.meal_plan_name ?? 'Meal plan'}</div>
+        <div className="profile-plan">
+          <div>{balanceData?.meal_plan_name ?? 'Meal plan'}</div>
           <span className="status-pill"><i className="status-dot" /> {balanceData?.subscriber_status ?? 'Active'}</span>
         </div>
       </motion.section>
       <motion.section className="settings-row" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .1 }}>
-        <span className="settings-icon"><ShieldCheck size={21} /></span>
+        <span className="settings-icon"><Mail size={28} /></span>
         <div><strong>Reset PIN</strong><div className="page-subtitle" style={{ marginTop: 4 }}>We’ll email a brand-new PIN to your Ashesi inbox right away.</div></div>
         <button className="primary-button" onClick={() => void handleResetPin()} disabled={pinLoading}>
-          {pinLoading ? <><span className="spinner" /> Sending…</> : <><Mail size={16} /> Send new PIN</>}
+          {pinLoading ? <><span className="spinner" /> Sending…</> : 'Send new PIN'}
         </button>
       </motion.section>
       <motion.section className="settings-row disabled" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .18 }}>

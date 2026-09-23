@@ -14,21 +14,10 @@ const NAV_ITEMS: { key: Screen; label: string }[] = [
   { key: 'settings', label: 'Settings' },
 ];
 
-function MealMark() {
-  return (
-    <svg viewBox="0 0 52 52" aria-hidden="true">
-      <circle cx="26" cy="26" r="20.5" fill="none" stroke="currentColor" strokeWidth="5" />
-      <rect x="22.5" y="3" width="7" height="46" fill="var(--mark-cut, white)" />
-      <path d="M18 7v13m4-13v13m-8-13v13c0 4 2 6 4 6v19" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
-      <path d="M34 7v18c0 3-2 5-4 5v15" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function Brand({ inverse = false }: { inverse?: boolean }) {
   return (
     <div className={`brand ${inverse ? 'inverse' : ''}`} aria-label="Ashesi Meals">
-      <span className="brand-mark"><MealMark /></span>
+      <span className="brand-mark" aria-hidden="true" />
       <span className="brand-name">Ashesi Meals</span>
     </div>
   );

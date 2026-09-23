@@ -53,7 +53,7 @@ export function HistoryPage() {
 
   const total = history.reduce((sum, item) => sum + item.cost * item.quantity, 0);
   return (
-    <div className="page">
+    <div className="page history-page">
       <header className="page-heading">
         <h1 className="page-title">Purchase history</h1>
         <p className="page-subtitle">Track every meal swipe across the Akorno cafés.</p>

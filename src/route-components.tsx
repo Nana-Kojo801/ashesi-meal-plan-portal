@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { HistorySkeleton } from './components/skeleton';
+import { AnalyticsSkeleton, CalculatorSkeleton } from './components/skeleton';
 
 const ReportsPage = lazy(() =>
   import('./pages/reports/reports-page').then((module) => ({ default: module.ReportsPage })),
@@ -10,9 +10,9 @@ const CalculatorPage = lazy(() =>
 );
 
 export function ReportsRoute() {
-  return <Suspense fallback={<HistorySkeleton />}><ReportsPage /></Suspense>;
+  return <Suspense fallback={<AnalyticsSkeleton />}><ReportsPage /></Suspense>;
 }
 
 export function CalculatorRoute() {
-  return <Suspense fallback={<HistorySkeleton />}><CalculatorPage /></Suspense>;
+  return <Suspense fallback={<CalculatorSkeleton />}><CalculatorPage /></Suspense>;
 }

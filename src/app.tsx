@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
 import { WifiOff } from 'lucide-react';
 import { Header } from './components/header';
 import { BottomNav } from './components/bottom-nav';
@@ -139,7 +138,7 @@ export default function App() {
         },
       }}
     >
-      <div className="app-shell">
+      <div className={`app-shell screen-${screen}`}>
         <Header screen={screen} onNav={handleNav} />
         {isOffline && (
           <div className="offline-banner">
@@ -149,17 +148,9 @@ export default function App() {
         )}
         <main className="app-main">
           <div className="app-content">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.28, ease: [0.2, 0.7, 0.2, 1] }}
-              >
+              <div className="route-view" key={location.pathname}>
                 <Outlet />
-              </motion.div>
-            </AnimatePresence>
+              </div>
           </div>
         </main>
         {isMobile &&

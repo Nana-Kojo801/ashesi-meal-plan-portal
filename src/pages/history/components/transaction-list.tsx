@@ -29,8 +29,8 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Props) {
           transition={{ delay: groupIndex * .08 }}
         >
           <div className="history-group-head">
-            <div><strong>{group.label}</strong><small>{group.date}</small></div>
-            <div className="history-group-total"><small>Total spent</small><span>GHS {fmtAmount(group.total)}</span></div>
+            <div><strong>{group.label}</strong><small>{new Date(`${group.date}T12:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</small></div>
+            <div className="history-group-total"><span>GHS {fmtAmount(group.total)}</span><small>Total spent</small></div>
           </div>
           <div className="transaction-list">
             {group.items.map((tx, index) => (
@@ -43,7 +43,7 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Props) {
               >
                 <span className="transaction-icon"><Receipt size={16} /></span>
                 <div className="transaction-item">{tx.name}</div>
-                <div className="transaction-meta">{tx.transaction_point}</div>
+                <div className="transaction-meta">{tx.transaction_point}<span className="mobile-transaction-time"> · {formatTime(tx.date)}</span></div>
                 <div className="transaction-time">{formatTime(tx.date)}</div>
                 <div className="transaction-qty">×{tx.quantity}</div>
                 <div className="transaction-price">GHS {fmtAmount(tx.cost * tx.quantity)}</div>

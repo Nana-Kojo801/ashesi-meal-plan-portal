@@ -6,6 +6,7 @@ import { todayISO, getGreeting, fmtAmount } from '../../lib/utils';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
 import { RecentActivity } from './components/recent-activity';
+import { DashboardSkeleton } from '../../components/skeleton';
 import type { HistoryItem } from '../../types';
 
 export function HomePage() {
@@ -45,7 +46,7 @@ export function HomePage() {
   const recentItems = [...todayHistory].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
 
   if (loading && !balanceData) {
-    return <div className="home-grid" style={{ minHeight: 560, opacity: .55 }} aria-label="Loading dashboard" />;
+    return <DashboardSkeleton />;
   }
 
   if (error && !balanceData) {
@@ -58,7 +59,7 @@ export function HomePage() {
     );
   }
 
-  if (!balanceData) return null;
+  if (!balanceData) return <DashboardSkeleton />;
 
   const dailyLimit = balanceData.daily_spending_limit;
   const dailyBalance = Math.max(0, dailyLimit - spentToday);
@@ -88,7 +89,7 @@ export function HomePage() {
           </motion.div>
           <div className="balance-label">Available today</div>
           <div className="balance-progress"><div style={{ width: `${remaining}%` }} /></div>
-          <div className="balance-limit">GHS {fmtAmount(dailyLimit)} daily limit</div>
+          <div className="balance-limit"><strong>GHS {fmtAmount(dailyLimit)}</strong><span>Daily limit</span></div>
         </div>
         <div className="home-facts">
           <motion.div className="home-fact" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .28 }}>

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 import { fetchHistory } from '../../api';
-import { HistorySkeleton } from '../../components/skeleton';
+import { AnalyticsSkeleton } from '../../components/skeleton';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
 import { fmtAmount } from '../../lib/utils';
@@ -24,7 +24,7 @@ export function ReportsPage() {
   });
   const stats = useAnalytics(history, balanceData);
 
-  if (isLoading) return <HistorySkeleton />;
+  if (isLoading) return <AnalyticsSkeleton />;
   if (!stats || stats.totalTx < 3) return <div className="empty-state">Make a few more purchases to unlock analytics.</div>;
 
   const weeklyMax = Math.max(stats.thisWeekSpend, stats.lastWeekSpend, 1);
@@ -33,7 +33,7 @@ export function ReportsPage() {
   const dayMax = Math.max(...stats.dayOfWeek.map((day) => day.spend), 1);
 
   return (
-    <div className="page">
+    <div className="page analytics-page">
       <header className="page-heading">
         <h1 className="page-title">Analytics</h1>
         <p className="page-subtitle">Last 30 days of spending, visualised.</p>
@@ -54,7 +54,6 @@ export function ReportsPage() {
       <div className="analytics-grid">
         <motion.section className="analytics-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .12 }}>
           <h2 className="analytics-section-title">Daily spending</h2>
-          <div className="analytics-section-sub">Last 30 days</div>
           <div className="daily-chart">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={stats.dailyTrend} margin={{ top: 8, right: 10, left: -8, bottom: 8 }}>
@@ -65,8 +64,8 @@ export function ReportsPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} stroke="#e4e8ee" />
-                <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#667085' }} tickLine={false} axisLine={false} interval={5} />
-                <YAxis tickFormatter={(value) => `GHS ${value}`} tick={{ fontSize: 9, fill: '#667085' }} tickLine={false} axisLine={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#667085' }} tickLine={false} axisLine={false} interval={5} />
+                <YAxis tickFormatter={(value) => `GHS ${value}`} tick={{ fontSize: 11, fill: '#667085' }} tickLine={false} axisLine={false} />
                 <Tooltip content={<ChartTooltip />} />
                 <Area type="monotone" dataKey="spend" stroke="#e20a1c" strokeWidth={3} fill="url(#spendFill)" dot={{ r: 2.5, fill: '#fff', stroke: '#e20a1c', strokeWidth: 2 }} activeDot={{ r: 5, fill: '#e20a1c', stroke: '#fff', strokeWidth: 2 }} isAnimationActive animationDuration={1100} />
               </AreaChart>

@@ -9,13 +9,13 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'icons/*.png'],
+      includeAssets: ['favicon.png', 'meal-mark.svg', 'icons/*.png'],
       manifest: {
         name: 'Ashesi Meals',
         short_name: 'AshesiMeals',
         description: 'Ashesi University meal plan subscriber portal',
-        theme_color: '#D81E2C',
-        background_color: '#FBF6F0',
+        theme_color: '#850008',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',

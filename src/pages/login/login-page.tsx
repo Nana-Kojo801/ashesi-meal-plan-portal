@@ -26,9 +26,11 @@ export function LoginPage({ onLogin, error, loading }: LoginPageProps) {
         <section className="login-art red-plane">
           <Brand inverse />
           <div className="login-kicker">Good food<br />brighter days</div>
-          <motion.div className="login-wordmark" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .15, duration: .65 }}>
-            Ashesi<span>Meals</span>
-          </motion.div>
+          <div className="login-wordmark">
+            <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .15, duration: .65 }}>
+              <span className="wordmark-ashesi">Ashesi</span><span className="wordmark-meals">Meals</span>
+            </motion.div>
+          </div>
         </section>
         <section className="login-panel">
           <motion.div className="login-form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .18 }}>

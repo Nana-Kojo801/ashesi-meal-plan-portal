@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ChevronRight, Minus, Plus, Search, ShoppingCart, Trash2, X } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Minus, Plus, Search, ShoppingCart, Store, Trash2, X } from 'lucide-react';
+import { CalculatorSkeleton } from '../../components/skeleton';
 import { fetchHistory } from '../../api';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
@@ -27,6 +28,31 @@ export function CalculatorPage() {
   const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
   const [search, setSearch] = useState('');
   const [cartOpen, setCartOpen] = useState(false);
+  const sheetRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!cartOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    sheetRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setCartOpen(false);
+      if (event.key !== 'Tab') return;
+      const controls = sheetRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+      if (!controls?.length) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleKey);
+      previousFocus?.focus();
+    };
+  }, [cartOpen]);
 
   const { data: history = [], isLoading } = useQuery<HistoryItem[]>({
     queryKey: ['history-menu', studentId],
@@ -65,7 +91,8 @@ export function CalculatorPage() {
   const cartItems = Array.from(cart.values());
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
-  const balance = balanceData?.current_balance ?? 0;
+  const spentToday = history.filter(item => item.date.slice(0, 10) === todayISO()).reduce((sum, item) => sum + item.cost * item.quantity, 0);
+  const balance = Math.max(0, (balanceData?.daily_spending_limit ?? 0) - spentToday);
   const afterPurchase = balance - cartTotal;
 
   const addItem = (cafe: string, item: Pick<MenuItem, 'name' | 'price'>) => setCart((previous) => {
@@ -100,7 +127,7 @@ export function CalculatorPage() {
         {inSheet && <button className="text-button" onClick={() => setCartOpen(false)} aria-label="Close cart"><X size={19} /></button>}
         {!inSheet && cartCount > 0 && <button className="text-button" style={{ color: 'inherit', opacity: .8 }} onClick={() => setCart(new Map())}><Trash2 size={14} /> Clear all</button>}
       </div>
-      <div style={{ marginTop: 18 }}>
+      <div className="order-items">
         <AnimatePresence initial={false}>
           {cartItems.length === 0 ? (
             <div className="empty-state" style={{ color: 'inherit', opacity: .7 }}>Add items to preview your spend.</div>
@@ -108,10 +135,10 @@ export function CalculatorPage() {
             <motion.div className="order-row" key={keyFor(item.cafe, item.name)} layout initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }}>
               <div><strong>{item.name}</strong><small>{item.cafe} · GHS {fmtAmount(item.price)}</small></div>
               <div className="quantity">
-                <button className="secondary" onClick={() => decreaseItem(item.cafe, item.name)}><Minus size={13} /></button>
+                <button className="secondary" aria-label={`Decrease ${item.name}`} onClick={() => decreaseItem(item.cafe, item.name)}><Minus size={18} /></button>
                 <motion.strong key={item.qty} initial={{ scale: .6 }} animate={{ scale: 1 }}>{item.qty}</motion.strong>
-                <button onClick={() => addItem(item.cafe, item)}><Plus size={13} /></button>
-                {inSheet && <button className="secondary" onClick={() => removeItem(item.cafe, item.name)}><Trash2 size={12} /></button>}
+                <button aria-label={`Increase ${item.name}`} onClick={() => addItem(item.cafe, item)}><Plus size={18} /></button>
+                {inSheet && <button className="secondary" aria-label={`Remove ${item.name}`} onClick={() => removeItem(item.cafe, item.name)}><Trash2 size={14} /></button>}
               </div>
             </motion.div>
           ))}
@@ -124,6 +151,8 @@ export function CalculatorPage() {
       </div>
     </>
   );
+
+  if (isLoading) return <CalculatorSkeleton />;
 
   return (
     <>
@@ -161,22 +190,20 @@ export function CalculatorPage() {
             ) : (
               <motion.div key="menu" initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 14 }}>
                 <button className="text-button" onClick={() => { setView('cafes'); setActiveCafe(null); setSearch(''); }}><ArrowLeft size={15} /> Back to cafés</button>
-                <div className="cafe-banner red-plane"><ShoppingCart size={20} /> {selectedCafe}</div>
+                <div className="cafe-banner red-plane"><span className="cafe-icon"><Store size={28} /></span> {selectedCafe}</div>
                 <div className="search-box">
                   <Search size={17} />
-                  <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search menu items…" />
+                  <input aria-label="Search menu items" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search menu items…" />
                   {search && <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 12, top: 13, background: 'transparent' }}><X size={15} /></button>}
                 </div>
                 <div style={{ marginTop: 18 }}>
                   {filteredItems.length === 0 ? <div className="empty-state">No items match “{search}”.</div> : filteredItems.map((item, index) => {
-                    const selected = selectedCafe ? cart.get(keyFor(selectedCafe, item.name)) : undefined;
                     return (
                       <motion.div className="menu-row" key={item.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * .035 }}>
-                        <div className="menu-name">{item.name}<small>Ordered {item.count}×</small></div>
+                        <div className="menu-name">{item.name}</div>
                         <div className="menu-price">GHS {fmtAmount(item.price)}</div>
                         <div className="quantity">
-                          {selected && <><button style={{ background: '#f3f4f6', color: '#df001f' }} onClick={() => decreaseItem(selectedCafe!, item.name)}><Minus size={13} /></button><motion.strong key={selected.qty} initial={{ scale: .6 }} animate={{ scale: 1 }}>{selected.qty}</motion.strong></>}
-                          <button onClick={() => addItem(selectedCafe!, item)}><Plus size={14} /></button>
+                          <button aria-label={`Add ${item.name}`} onClick={() => addItem(selectedCafe!, item)}><Plus size={22} /></button>
                         </div>
                       </motion.div>
                     );
@@ -189,8 +216,8 @@ export function CalculatorPage() {
         <aside className="calculator-order red-plane">{renderOrderContents()}</aside>
       </div>
 
-      <AnimatePresence>
-        {cartCount > 0 && isMobile && createPortal(
+      {createPortal(<AnimatePresence>
+        {cartCount > 0 && isMobile && (
           <motion.button className="cart-fab" onClick={() => setCartOpen(true)} initial={{ opacity: 0, y: 25, scale: .9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: .9 }}>
             <span className="cart-fab-main"><ShoppingCart size={28} /><span><small>{cartCount} item{cartCount === 1 ? '' : 's'}</small><strong>GHS {fmtAmount(cartTotal)}</strong></span><ChevronRight size={20} /></span>
             <span className="cart-fab-summary">
@@ -198,17 +225,16 @@ export function CalculatorPage() {
               <span><small>Total</small><strong>GHS {fmtAmount(cartTotal)}</strong></span>
               <span><small>After</small><strong>GHS {fmtAmount(afterPurchase)}</strong></span>
             </span>
-          </motion.button>,
-          document.body,
+          </motion.button>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
 
       {createPortal(
         <AnimatePresence>
           {cartOpen && (
             <>
               <motion.div className="cart-backdrop" onClick={() => setCartOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-              <motion.aside className="cart-sheet" initial={{ x: isMobile ? 0 : '100%', y: isMobile ? '100%' : 0 }} animate={{ x: 0, y: 0 }} exit={{ x: isMobile ? 0 : '100%', y: isMobile ? '100%' : 0 }} transition={{ type: 'spring', stiffness: 280, damping: 30 }}>
+              <motion.aside ref={sheetRef} className="cart-sheet red-plane" role="dialog" aria-modal="true" aria-label="Your order" initial={{ x: isMobile ? 0 : '100%', y: isMobile ? '100%' : 0 }} animate={{ x: 0, y: 0 }} exit={{ x: isMobile ? 0 : '100%', y: isMobile ? '100%' : 0 }} transition={{ type: 'spring', stiffness: 280, damping: 30 }}>
                 {renderOrderContents(true)}
               </motion.aside>
             </>

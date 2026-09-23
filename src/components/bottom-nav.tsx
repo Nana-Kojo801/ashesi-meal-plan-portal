@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Home, Receipt, BarChart3, Calculator, Settings } from 'lucide-react';
+import { Home, Clock3, BarChart3, Calculator, Settings } from 'lucide-react';
 import type { Screen } from '../types';
 
 interface BottomNavProps {
@@ -9,7 +9,7 @@ interface BottomNavProps {
 
 const ITEMS: { key: Screen; label: string; Icon: typeof Home }[] = [
   { key: 'home', label: 'Home', Icon: Home },
-  { key: 'report', label: 'History', Icon: Receipt },
+  { key: 'report', label: 'History', Icon: Clock3 },
   { key: 'analytics', label: 'Analytics', Icon: BarChart3 },
   { key: 'calculator', label: 'Calculator', Icon: Calculator },
   { key: 'settings', label: 'Settings', Icon: Settings },
@@ -27,7 +27,7 @@ export function BottomNav({ screen, onNav }: BottomNavProps) {
             onClick={() => onNav(key)}
           >
             <motion.span animate={{ y: active ? -1 : 0 }} transition={{ type: 'spring', stiffness: 500 }}>
-              <Icon size={20} strokeWidth={active ? 2.6 : 2} />
+              <Icon size={23} strokeWidth={active ? 2.6 : 2} />
             </motion.span>
             <span>{label}</span>
             {active && <motion.i layoutId="bottom-nav-dot" className="bottom-nav-dot" />}

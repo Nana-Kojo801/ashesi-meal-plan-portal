@@ -45,7 +45,7 @@ export function formatTime(dateStr: string): string {
 
 export function fmtAmount(n: number): string {
   const rounded = Math.round(n * 100) / 100;
-  return rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(2);
+  return rounded.toFixed(2);
 }
 
 export function getGreeting(): string {
