@@ -22,7 +22,7 @@ function nDaysAgoISO(days: number) {
 export function CalculatorPage() {
   const { balanceData, isMobile } = useAppContext();
   const { studentId } = useSessionStore();
-  const [view, setView] = useState<'cafes' | 'menu'>('cafes');
+  const [view, setView] = useState<'cafes' | 'menu'>('menu');
   const [activeCafe, setActiveCafe] = useState<string | null>(null);
   const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
   const [search, setSearch] = useState('');
@@ -53,7 +53,8 @@ export function CalculatorPage() {
     })).sort((a, b) => a.cafe.localeCompare(b.cafe));
   }, [history]);
 
-  const activeData = cafes.find((entry) => entry.cafe === activeCafe);
+  const selectedCafe = activeCafe ?? cafes[0]?.cafe ?? null;
+  const activeData = cafes.find((entry) => entry.cafe === selectedCafe);
   const filteredItems = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!activeData) return [];
@@ -128,12 +129,12 @@ export function CalculatorPage() {
     <>
       <div className="page calculator-layout">
         <section className="calculator-main">
+          <div className="calculator-header">
+            <div><h1 className="calculator-title">Price Calculator</h1><p className="page-subtitle">Plan your meals and track your spending.</p></div>
+          </div>
           <AnimatePresence mode="wait" initial={false}>
             {view === 'cafes' ? (
               <motion.div key="cafes" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}>
-                <div className="calculator-header">
-                  <div><h1 className="calculator-title">Price Calculator</h1><p className="page-subtitle">Build a meal and preview the effect on your balance.</p></div>
-                </div>
                 {isLoading ? <div className="empty-state">Loading cafés…</div> : cafes.length === 0 ? <div className="empty-state">No menu history is available yet.</div> : (
                   <div className="cafe-list">
                     {cafes.map(({ cafe, items }, index) => {
@@ -160,7 +161,7 @@ export function CalculatorPage() {
             ) : (
               <motion.div key="menu" initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 14 }}>
                 <button className="text-button" onClick={() => { setView('cafes'); setActiveCafe(null); setSearch(''); }}><ArrowLeft size={15} /> Back to cafés</button>
-                <div className="cafe-banner red-plane"><ShoppingCart size={20} /> {activeCafe}</div>
+                <div className="cafe-banner red-plane"><ShoppingCart size={20} /> {selectedCafe}</div>
                 <div className="search-box">
                   <Search size={17} />
                   <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search menu items…" />
@@ -168,14 +169,14 @@ export function CalculatorPage() {
                 </div>
                 <div style={{ marginTop: 18 }}>
                   {filteredItems.length === 0 ? <div className="empty-state">No items match “{search}”.</div> : filteredItems.map((item, index) => {
-                    const selected = activeCafe ? cart.get(keyFor(activeCafe, item.name)) : undefined;
+                    const selected = selectedCafe ? cart.get(keyFor(selectedCafe, item.name)) : undefined;
                     return (
                       <motion.div className="menu-row" key={item.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * .035 }}>
                         <div className="menu-name">{item.name}<small>Ordered {item.count}×</small></div>
                         <div className="menu-price">GHS {fmtAmount(item.price)}</div>
                         <div className="quantity">
-                          {selected && <><button style={{ background: '#f3f4f6', color: '#df001f' }} onClick={() => decreaseItem(activeCafe!, item.name)}><Minus size={13} /></button><motion.strong key={selected.qty} initial={{ scale: .6 }} animate={{ scale: 1 }}>{selected.qty}</motion.strong></>}
-                          <button onClick={() => addItem(activeCafe!, item)}><Plus size={14} /></button>
+                          {selected && <><button style={{ background: '#f3f4f6', color: '#df001f' }} onClick={() => decreaseItem(selectedCafe!, item.name)}><Minus size={13} /></button><motion.strong key={selected.qty} initial={{ scale: .6 }} animate={{ scale: 1 }}>{selected.qty}</motion.strong></>}
+                          <button onClick={() => addItem(selectedCafe!, item)}><Plus size={14} /></button>
                         </div>
                       </motion.div>
                     );

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { CalendarDays } from 'lucide-react';
 import type { Filter } from '../history-page';
 
 const CHIPS: { key: Filter; label: string }[] = [
@@ -19,7 +20,7 @@ export function FilterChips({ active, onChange }: { active: Filter; onChange: (f
           className={`filter-button ${active === key ? 'active' : ''}`}
           onClick={() => onChange(key)}
         >
-          {label}
+          {(key === 'date' || key === 'custom') && <CalendarDays size={14} />}{label}
         </motion.button>
       ))}
     </div>

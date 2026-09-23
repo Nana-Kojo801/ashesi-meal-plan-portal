@@ -1,14 +1,10 @@
 import { motion } from 'framer-motion';
 import { UtensilsCrossed } from 'lucide-react';
-import type { Screen, BalanceData } from '../types';
-import { fmtAmount } from '../lib/utils';
+import type { Screen } from '../types';
 
 interface HeaderProps {
   screen: Screen;
   onNav: (screen: Screen) => void;
-  balanceData: BalanceData | null;
-  studentInitial: string;
-  isMobile: boolean;
 }
 
 const NAV_ITEMS: { key: Screen; label: string }[] = [
@@ -28,7 +24,7 @@ export function Brand() {
   );
 }
 
-export function Header({ screen, onNav, balanceData, studentInitial }: HeaderProps) {
+export function Header({ screen, onNav }: HeaderProps) {
   return (
     <header className="topbar">
       <div className="topbar-inner">
@@ -53,19 +49,6 @@ export function Header({ screen, onNav, balanceData, studentInitial }: HeaderPro
             </button>
           ))}
         </nav>
-        <div className="topbar-account">
-          {balanceData && (
-            <div className="balance-chip">
-              <div>
-                <strong>GHS {fmtAmount(balanceData.current_balance)}</strong>
-                <small>Current balance</small>
-              </div>
-            </div>
-          )}
-          <button className="avatar" onClick={() => onNav('settings')} aria-label="Open settings">
-            {studentInitial}
-          </button>
-        </div>
       </div>
     </header>
   );

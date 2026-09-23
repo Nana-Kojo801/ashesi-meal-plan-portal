@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { RefreshCw } from 'lucide-react';
 import { fetchHistory } from '../../api';
 import { todayISO, getGreeting, fmtAmount } from '../../lib/utils';
 import { useAppContext } from '../../context/app-context';
@@ -12,9 +11,7 @@ import type { HistoryItem } from '../../types';
 export function HomePage() {
   const { balanceData, loadingBalance: loading, balanceError: error, retryBalance } = useAppContext();
   const { studentId } = useSessionStore();
-  const queryClient = useQueryClient();
   const today = todayISO();
-  const isFetchingBalance = useIsFetching({ queryKey: ['balance', studentId] }) > 0;
 
   const historyCacheKey = `todayHistory_${studentId ?? ''}_${today}`;
   const historyEnabled = !!balanceData && !!studentId;
@@ -44,14 +41,8 @@ export function HomePage() {
     }
   }, [historyEnabled, isHistoryLoading, todayHistory, historyCacheKey]);
 
-  const fetching = Boolean(isFetchingBalance) || isHistoryLoading;
   const spentToday = todayHistory.reduce((sum, item) => sum + item.cost * item.quantity, 0);
   const recentItems = [...todayHistory].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
-
-  const handleRefresh = () => {
-    void queryClient.invalidateQueries({ queryKey: ['balance', studentId] });
-    void queryClient.invalidateQueries({ queryKey: ['history', studentId] });
-  };
 
   if (loading && !balanceData) {
     return <div className="home-grid" style={{ minHeight: 560, opacity: .55 }} aria-label="Loading dashboard" />;
@@ -81,9 +72,6 @@ export function HomePage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: .55, ease: [0.2, 0.7, 0.2, 1] }}
       >
-        <button className="refresh-button" onClick={handleRefresh} disabled={fetching} aria-label="Refresh balance">
-          <RefreshCw size={17} style={{ animation: fetching ? 'spin .7s linear infinite' : undefined }} />
-        </button>
         <div>
           <div className="home-greeting">{getGreeting()}</div>
           <h1 className="home-name">{balanceData.firstname}</h1>

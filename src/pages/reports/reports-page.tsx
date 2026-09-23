@@ -27,14 +27,6 @@ export function ReportsPage() {
   if (isLoading) return <HistorySkeleton />;
   if (!stats || stats.totalTx < 3) return <div className="empty-state">Make a few more purchases to unlock analytics.</div>;
 
-  const insightRows = [
-    ['Favourite café', stats.cafes[0]?.name ?? '—', `${stats.cafes[0]?.visits ?? 0} visits`],
-    ['Most ordered', stats.mostFrequent?.name ?? '—', `${stats.mostFrequent?.qty ?? 0} ordered`],
-    ['Priciest item', `GHS ${fmtAmount(stats.mostExpensive?.unit ?? 0)}`, stats.mostExpensive?.name ?? '—'],
-    ['Variety', `${stats.varietyScore} items`, `${stats.oneTimeTries} tried once`],
-    ['Peak spending day', stats.peakEntry ? `GHS ${fmtAmount(stats.peakEntry[1])}` : '—', stats.peakEntry?.[0] ?? '—'],
-  ];
-
   return (
     <div className="page">
       <header className="page-heading">
@@ -122,35 +114,6 @@ export function ReportsPage() {
         </section>
       </div>
 
-      <div className="analytics-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <section className="analytics-section">
-          <h2 className="analytics-section-title">Time of day</h2>
-          {[
-            ['Morning', stats.morning],
-            ['Afternoon', stats.afternoon],
-            ['Evening', stats.evening],
-          ].map(([label, value]) => {
-            const amount = Number(value);
-            const percent = Math.round((amount / stats.todTotal) * 100);
-            return (
-              <div key={String(label)} style={{ marginTop: 20 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 750 }}><span>{label}</span><span>GHS {fmtAmount(amount)} · {percent}%</span></div>
-                <div style={{ height: 6, marginTop: 7, borderRadius: 9, background: '#e9ebef', overflow: 'hidden' }}><motion.div initial={{ width: 0 }} animate={{ width: `${percent}%` }} transition={{ duration: .8 }} style={{ height: '100%', background: '#df001f' }} /></div>
-              </div>
-            );
-          })}
-        </section>
-        <section className="analytics-section">
-          <h2 className="analytics-section-title">More insights</h2>
-          {insightRows.map(([label, value, detail]) => (
-            <div className="rank-row" key={label}>
-              <span />
-              <span className="rank-name">{label}<small>{detail}</small></span>
-              <span className="rank-value">{value}</span>
-            </div>
-          ))}
-        </section>
-      </div>
     </div>
   );
 }

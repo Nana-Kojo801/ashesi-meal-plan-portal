@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { RefreshCw } from 'lucide-react';
+import { Receipt, RefreshCw } from 'lucide-react';
 import { HistorySkeleton } from '../../../components/skeleton';
 import { formatTime, fmtAmount } from '../../../lib/utils';
 import type { HistoryItem } from '../../../types';
@@ -29,8 +29,8 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Props) {
           transition={{ delay: groupIndex * .08 }}
         >
           <div className="history-group-head">
-            <strong>{group.label}</strong>
-            <span>GHS {fmtAmount(group.total)}</span>
+            <div><strong>{group.label}</strong><small>{group.date}</small></div>
+            <div className="history-group-total"><small>Total spent</small><span>GHS {fmtAmount(group.total)}</span></div>
           </div>
           <div className="transaction-list">
             {group.items.map((tx, index) => (
@@ -41,6 +41,7 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Props) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: groupIndex * .08 + index * .045 }}
               >
+                <span className="transaction-icon"><Receipt size={16} /></span>
                 <div className="transaction-item">{tx.name}</div>
                 <div className="transaction-meta">{tx.transaction_point}</div>
                 <div className="transaction-time">{formatTime(tx.date)}</div>

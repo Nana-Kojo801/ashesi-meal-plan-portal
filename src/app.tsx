@@ -106,8 +106,6 @@ export default function App() {
   const studentName = balanceData
     ? `${balanceData.firstname} ${balanceData.lastname}`.trim()
     : (studentId ?? '');
-  const studentInitial = (studentName[0] ?? 'A').toUpperCase();
-
   if (!studentId) {
     return (
       <>
@@ -142,13 +140,7 @@ export default function App() {
       }}
     >
       <div className="app-shell">
-        <Header
-          screen={screen}
-          onNav={handleNav}
-          balanceData={balanceData ?? null}
-          studentInitial={studentInitial}
-          isMobile={isMobile}
-        />
+        <Header screen={screen} onNav={handleNav} />
         {isOffline && (
           <div className="offline-banner">
             <WifiOff size={14} />

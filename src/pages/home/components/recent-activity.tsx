@@ -20,6 +20,9 @@ export function RecentActivity({ items, isLoading }: RecentActivityProps) {
           View all <ArrowUpRight size={14} />
         </button>
       </div>
+      <div className="activity-columns" aria-hidden="true">
+        <span>Merchant</span><span>Details</span><span>Amount</span>
+      </div>
       <div className="activity-list">
         {isLoading ? (
           [0, 1, 2].map((i) => (
@@ -45,14 +48,13 @@ export function RecentActivity({ items, isLoading }: RecentActivityProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: .2 + index * .07, type: 'spring', stiffness: 260, damping: 25 }}
             >
-              <div className="activity-copy">
+              <div className="activity-merchant">
                 <span className="activity-icon"><Receipt size={16} /></span>
-                <div style={{ minWidth: 0 }}>
-                  <div className="activity-name">{tx.name}</div>
-                  <div className="activity-meta">
-                    {tx.transaction_point} · {dateLabel(tx.date) === 'Today' ? formatTime(tx.date) : dateLabel(tx.date)}
-                  </div>
-                </div>
+                <strong>{tx.transaction_point}</strong>
+              </div>
+              <div className="activity-details">
+                <div className="activity-name">{tx.name}</div>
+                <div className="activity-meta">{dateLabel(tx.date) === 'Today' ? `Today, ${formatTime(tx.date)}` : `${dateLabel(tx.date)}, ${formatTime(tx.date)}`}</div>
               </div>
               <div className="activity-amount">GHS {fmtAmount(tx.cost * tx.quantity)}</div>
             </motion.div>
