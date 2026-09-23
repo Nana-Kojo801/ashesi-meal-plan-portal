@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { fetchHistory } from '../../api';
 import { todayISO, yesterdayISO, dateLabel, fmtAmount } from '../../lib/utils';
-import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
 import { FilterChips } from './components/filter-chips';
 import { DateRangePicker } from './components/date-range-picker';
@@ -12,7 +12,6 @@ import type { HistoryItem } from '../../types';
 export type Filter = 'today' | 'yesterday' | 'last2' | 'date' | 'custom';
 
 export function HistoryPage() {
-  useAppContext();
   const { studentId } = useSessionStore();
   const [filter, setFilter] = useState<Filter>('today');
   const [customDate, setCustomDate] = useState('');
@@ -22,37 +21,15 @@ export function HistoryPage() {
   const { startDate, endDate, rangeLabel } = useMemo(() => {
     const today = todayISO();
     const yesterday = yesterdayISO();
-    switch (filter) {
-      case 'today':
-        return { startDate: today, endDate: today, rangeLabel: 'Today' };
-      case 'yesterday':
-        return { startDate: yesterday, endDate: yesterday, rangeLabel: 'Yesterday' };
-      case 'last2':
-        return { startDate: yesterday, endDate: today, rangeLabel: 'Last 2 days' };
-      case 'date':
-        return {
-          startDate: customDate || today,
-          endDate: customDate || today,
-          rangeLabel: customDate ? dateLabel(customDate) : 'Pick a date',
-        };
-      case 'custom':
-        return {
-          startDate: customFrom || today,
-          endDate: customTo || today,
-          rangeLabel: 'Custom range',
-        };
-    }
+    if (filter === 'yesterday') return { startDate: yesterday, endDate: yesterday, rangeLabel: 'Yesterday' };
+    if (filter === 'last2') return { startDate: yesterday, endDate: today, rangeLabel: 'Last 2 days' };
+    if (filter === 'date') return { startDate: customDate || today, endDate: customDate || today, rangeLabel: customDate ? dateLabel(customDate) : 'Pick a date' };
+    if (filter === 'custom') return { startDate: customFrom || today, endDate: customTo || today, rangeLabel: 'Custom range' };
+    return { startDate: today, endDate: today, rangeLabel: 'Today' };
   }, [filter, customDate, customFrom, customTo]);
 
-  const queryReady =
-    filter === 'custom' ? !!customFrom && !!customTo : filter === 'date' ? !!customDate : true;
-
-  const {
-    data: history = [],
-    isLoading,
-    error,
-    refetch,
-  } = useQuery<HistoryItem[]>({
+  const queryReady = filter === 'custom' ? Boolean(customFrom && customTo) : filter === 'date' ? Boolean(customDate) : true;
+  const { data: history = [], isLoading, error, refetch } = useQuery<HistoryItem[]>({
     queryKey: ['history', studentId, startDate, endDate],
     queryFn: () => fetchHistory(studentId!, startDate, endDate),
     enabled: queryReady && !!studentId,
@@ -64,92 +41,48 @@ export function HistoryPage() {
     const byDate: Record<string, HistoryItem[]> = {};
     history.forEach((item) => {
       const date = item.date.slice(0, 10);
-      if (!byDate[date]) byDate[date] = [];
-      byDate[date].push(item);
+      (byDate[date] ??= []).push(item);
     });
-    return Object.entries(byDate)
-      .sort(([a], [b]) => b.localeCompare(a))
-      .map(([date, items]) => ({
-        date,
-        label: dateLabel(date),
-        total: items.reduce((s, x) => s + x.cost * x.quantity, 0),
-        items: [...items].sort((a, b) => b.date.localeCompare(a.date)),
-      }));
+    return Object.entries(byDate).sort(([a], [b]) => b.localeCompare(a)).map(([date, items]) => ({
+      date,
+      label: dateLabel(date),
+      total: items.reduce((sum, item) => sum + item.cost * item.quantity, 0),
+      items: [...items].sort((a, b) => b.date.localeCompare(a.date)),
+    }));
   }, [history]);
 
-  const filteredTotal = history.reduce((s, x) => s + x.cost * x.quantity, 0);
-  const errorMsg = error instanceof Error ? error.message : null;
-
+  const total = history.reduce((sum, item) => sum + item.cost * item.quantity, 0);
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div>
-        <h1
-          style={{
-            margin: 0,
-            fontSize: 25,
-            fontWeight: 800,
-            letterSpacing: '-1px',
-            lineHeight: 1.05,
-          }}
-        >
-          Purchase history
-        </h1>
-        <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#7A6A63', marginTop: 4 }}>
-          Track every meal swipe across the Akorno cafés.
-        </div>
-      </div>
-
+    <div className="page">
+      <header className="page-heading">
+        <h1 className="page-title">Purchase history</h1>
+        <p className="page-subtitle">Track every meal swipe across the Akorno cafés.</p>
+      </header>
       <FilterChips active={filter} onChange={setFilter} />
-
-      <DateRangePicker
-        filter={filter}
-        singleDate={customDate}
-        rangeFrom={customFrom}
-        rangeTo={customTo}
-        onSingleDate={setCustomDate}
-        onRangeFrom={setCustomFrom}
-        onRangeTo={setCustomTo}
-      />
-
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'linear-gradient(120deg, #E0233A, #8E0F18)',
-          color: '#fff',
-          borderRadius: 18,
-          padding: '16px 20px',
-          boxShadow: '0 22px 46px -24px rgba(110,30,18,.40)',
-        }}
-      >
-        <div>
-          <div style={{ fontSize: '12.5px', fontWeight: 600, opacity: 0.85 }}>{rangeLabel}</div>
-          <div style={{ fontWeight: 700, fontSize: 14, marginTop: 2 }}>
-            {history.length} purchases
-          </div>
+      <AnimatePresence mode="wait">
+        <DateRangePicker
+          filter={filter}
+          singleDate={customDate}
+          rangeFrom={customFrom}
+          rangeTo={customTo}
+          onSingleDate={setCustomDate}
+          onRangeFrom={setCustomFrom}
+          onRangeTo={setCustomTo}
+        />
+      </AnimatePresence>
+      <motion.section className="history-summary red-plane" layout>
+        <div className="history-summary-block">
+          <span className="eyebrow">{rangeLabel}</span>
+          <strong>{history.length} purchase{history.length === 1 ? '' : 's'}</strong>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '12.5px', fontWeight: 600, opacity: 0.85 }}>Total spent</div>
-          <div
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 700,
-              fontSize: 26,
-              letterSpacing: '-1px',
-            }}
-          >
-            GHS {fmtAmount(filteredTotal)}
-          </div>
+        <div className="history-summary-block">
+          <span className="eyebrow">Total spent</span>
+          <motion.strong key={total} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            GHS {fmtAmount(total)}
+          </motion.strong>
         </div>
-      </div>
-
-      <TransactionList
-        groups={groups}
-        isLoading={isLoading}
-        error={errorMsg}
-        onRetry={() => void refetch()}
-      />
+      </motion.section>
+      <TransactionList groups={groups} isLoading={isLoading} error={error instanceof Error ? error.message : null} onRetry={() => void refetch()} />
     </div>
   );
 }

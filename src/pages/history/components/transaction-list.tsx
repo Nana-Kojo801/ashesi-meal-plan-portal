@@ -4,149 +4,53 @@ import { HistorySkeleton } from '../../../components/skeleton';
 import { formatTime, fmtAmount } from '../../../lib/utils';
 import type { HistoryItem } from '../../../types';
 
-interface TransactionGroup {
-  date: string;
-  label: string;
-  total: number;
-  items: HistoryItem[];
-}
+interface Group { date: string; label: string; total: number; items: HistoryItem[] }
+interface Props { groups: Group[]; isLoading: boolean; error: string | null; onRetry: () => void }
 
-interface TransactionListProps {
-  groups: TransactionGroup[];
-  isLoading: boolean;
-  error: string | null;
-  onRetry: () => void;
-}
-
-export function TransactionList({ groups, isLoading, error, onRetry }: TransactionListProps) {
+export function TransactionList({ groups, isLoading, error, onRetry }: Props) {
   if (isLoading) return <HistorySkeleton />;
-
   if (error) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <div style={{ fontSize: 14, fontWeight: 700 }}>{error}</div>
-        <button
-          onClick={onRetry}
-          style={{
-            marginTop: 14,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            background: '#D81E2C',
-            color: '#fff',
-            fontWeight: 700,
-            fontSize: 13,
-            padding: '10px 18px',
-            borderRadius: 12,
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-          }}
-        >
-          <RefreshCw size={14} /> Retry
-        </button>
+      <div className="empty-state">
+        <strong>{error}</strong>
+        <div><button className="primary-button" onClick={onRetry} style={{ marginTop: 16 }}><RefreshCw size={14} /> Retry</button></div>
       </div>
     );
   }
-
-  if (groups.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        style={{
-          textAlign: 'center',
-          padding: '52px 20px',
-          background: '#fff',
-          border: '1px dashed #ECE0D4',
-          borderRadius: 20,
-        }}
-      >
-        <div style={{ fontWeight: 700, fontSize: 15 }}>No purchases in this range</div>
-        <div style={{ fontSize: 13, color: '#7A6A63', fontWeight: 600, marginTop: 5 }}>
-          Try a different date filter.
-        </div>
-      </motion.div>
-    );
-  }
-
+  if (!groups.length) return <div className="empty-state">No purchases in this range. Try another date.</div>;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-      {groups.map((group, gi) => (
-        <motion.div
+    <>
+      {groups.map((group, groupIndex) => (
+        <motion.section
+          className="history-group"
           key={group.date}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: gi * 0.07 }}
+          transition={{ delay: groupIndex * .08 }}
         >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 4px 9px',
-            }}
-          >
-            <div style={{ fontWeight: 800, fontSize: 13, letterSpacing: '.2px' }}>{group.label}</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#7A6A63' }}>
-              GHS {fmtAmount(group.total)}
-            </div>
+          <div className="history-group-head">
+            <strong>{group.label}</strong>
+            <span>GHS {fmtAmount(group.total)}</span>
           </div>
-          <div
-            style={{
-              background: '#fff',
-              border: '1px solid #ECE0D4',
-              borderRadius: 20,
-              boxShadow: '0 12px 26px -18px rgba(110,30,18,.26)',
-              overflow: 'hidden',
-            }}
-          >
-            {group.items.map((tx, i) => (
+          <div className="transaction-list">
+            {group.items.map((tx, index) => (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -6 }}
+                className="transaction-row"
+                key={`${tx.date}-${tx.name}-${index}`}
+                initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: gi * 0.07 + i * 0.04 }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  padding: '15px 18px',
-                  borderTop: i === 0 ? 'none' : '1px solid #ECE0D4',
-                }}
+                transition={{ delay: groupIndex * .08 + index * .045 }}
               >
-                <div
-                  style={{
-                    width: 3,
-                    height: 34,
-                    borderRadius: 99,
-                    background: '#D81E2C',
-                    opacity: 0.55,
-                    flexShrink: 0,
-                  }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: '14.5px' }}>{tx.name}</div>
-                  <div style={{ fontSize: 12, color: '#7A6A63', fontWeight: 600, marginTop: 3 }}>
-                    {tx.transaction_point} · Qty {tx.quantity} · {formatTime(tx.date)}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 16,
-                    flexShrink: 0,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  GHS {fmtAmount(tx.cost * tx.quantity)}
-                </div>
+                <div className="transaction-item">{tx.name}</div>
+                <div className="transaction-meta">{tx.transaction_point}</div>
+                <div className="transaction-time">{formatTime(tx.date)}</div>
+                <div className="transaction-qty">×{tx.quantity}</div>
+                <div className="transaction-price">GHS {fmtAmount(tx.cost * tx.quantity)}</div>
               </motion.div>
             ))}
           </div>
-        </motion.div>
+        </motion.section>
       ))}
-    </div>
+    </>
   );
 }

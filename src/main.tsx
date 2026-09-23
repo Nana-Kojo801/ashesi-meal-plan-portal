@@ -1,4 +1,4 @@
-import { StrictMode, lazy, Suspense } from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -10,16 +10,7 @@ import { NotFoundPage } from './pages/not-found/not-found-page';
 import { HomePage } from './pages/home/home-page';
 import { HistoryPage } from './pages/history/history-page';
 import { SettingsPage } from './pages/settings/settings-page';
-import { HistorySkeleton } from './components/skeleton';
-
-// Reports page is lazy-loaded: recharts adds ~200 KB and is only needed on the /reports route.
-const ReportsPage = lazy(() =>
-  import('./pages/reports/reports-page').then((m) => ({ default: m.ReportsPage })),
-);
-
-const CalculatorPage = lazy(() =>
-  import('./pages/calculator/calculator-page').then((m) => ({ default: m.CalculatorPage })),
-);
+import { ReportsRoute, CalculatorRoute } from './route-components';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,21 +32,13 @@ const router = createBrowserRouter([
       {
         path: '/reports',
         element: (
-          <ErrorBoundary>
-            <Suspense fallback={<HistorySkeleton />}>
-              <ReportsPage />
-            </Suspense>
-          </ErrorBoundary>
+          <ErrorBoundary><ReportsRoute /></ErrorBoundary>
         ),
       },
       {
         path: '/calculator',
         element: (
-          <ErrorBoundary>
-            <Suspense fallback={<HistorySkeleton />}>
-              <CalculatorPage />
-            </Suspense>
-          </ErrorBoundary>
+          <ErrorBoundary><CalculatorRoute /></ErrorBoundary>
         ),
       },
       { path: '/settings', element: <ErrorBoundary><SettingsPage /></ErrorBoundary> },

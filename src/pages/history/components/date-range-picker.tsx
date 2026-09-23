@@ -2,111 +2,39 @@ import { motion } from 'framer-motion';
 import { todayISO } from '../../../lib/utils';
 import type { Filter } from '../history-page';
 
-const inputStyle: React.CSSProperties = {
-  background: '#F2E7DC',
-  border: '1.5px solid #ECE0D4',
-  borderRadius: 12,
-  padding: '9px 12px',
-  fontWeight: 600,
-  fontSize: 13,
-  color: '#1C1413',
-  fontFamily: 'inherit',
-  outline: 'none',
-  cursor: 'pointer',
-};
-
-const labelStyle: React.CSSProperties = {
-  fontSize: '11.5px',
-  fontWeight: 700,
-  color: '#7A6A63',
-  letterSpacing: '.3px',
-  flexShrink: 0,
-};
-
-interface DateRangePickerProps {
+interface Props {
   filter: Filter;
   singleDate: string;
   rangeFrom: string;
   rangeTo: string;
-  onSingleDate: (val: string) => void;
-  onRangeFrom: (val: string) => void;
-  onRangeTo: (val: string) => void;
+  onSingleDate: (value: string) => void;
+  onRangeFrom: (value: string) => void;
+  onRangeTo: (value: string) => void;
 }
 
-export function DateRangePicker({
-  filter,
-  singleDate,
-  rangeFrom,
-  rangeTo,
-  onSingleDate,
-  onRangeFrom,
-  onRangeTo,
-}: DateRangePickerProps) {
+export function DateRangePicker(props: Props) {
   const today = todayISO();
-
-  if (filter === 'date') {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          background: '#fff',
-          border: '1px solid #ECE0D4',
-          borderRadius: 18,
-          padding: '14px 18px',
-        }}
-      >
-        <span style={labelStyle}>DATE</span>
-        <input
-          type="date"
-          value={singleDate}
-          onChange={(e) => onSingleDate(e.target.value)}
-          max={today}
-          style={inputStyle}
-        />
-      </motion.div>
-    );
-  }
-
-  if (filter === 'custom') {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 10,
-          background: '#fff',
-          border: '1px solid #ECE0D4',
-          borderRadius: 18,
-          padding: '14px 18px',
-        }}
-      >
-        <span style={labelStyle}>FROM</span>
-        <input
-          type="date"
-          value={rangeFrom}
-          onChange={(e) => onRangeFrom(e.target.value)}
-          max={rangeTo || today}
-          style={inputStyle}
-        />
-        <span style={labelStyle}>TO</span>
-        <input
-          type="date"
-          value={rangeTo}
-          onChange={(e) => onRangeTo(e.target.value)}
-          min={rangeFrom || undefined}
-          max={today}
-          style={inputStyle}
-        />
-      </motion.div>
-    );
-  }
-
-  return null;
+  if (props.filter !== 'date' && props.filter !== 'custom') return null;
+  return (
+    <motion.div
+      className="date-picker"
+      initial={{ opacity: 0, height: 0, y: -8 }}
+      animate={{ opacity: 1, height: 'auto', y: 0 }}
+      exit={{ opacity: 0, height: 0 }}
+    >
+      {props.filter === 'date' ? (
+        <>
+          <label htmlFor="history-date">DATE</label>
+          <input id="history-date" type="date" value={props.singleDate} max={today} onChange={(event) => props.onSingleDate(event.target.value)} />
+        </>
+      ) : (
+        <>
+          <label htmlFor="history-from">FROM</label>
+          <input id="history-from" type="date" value={props.rangeFrom} max={props.rangeTo || today} onChange={(event) => props.onRangeFrom(event.target.value)} />
+          <label htmlFor="history-to">TO</label>
+          <input id="history-to" type="date" value={props.rangeTo} min={props.rangeFrom || undefined} max={today} onChange={(event) => props.onRangeTo(event.target.value)} />
+        </>
+      )}
+    </motion.div>
+  );
 }

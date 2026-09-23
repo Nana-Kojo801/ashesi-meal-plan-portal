@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
 import { WifiOff } from 'lucide-react';
 import { Header } from './components/header';
 import { BottomNav } from './components/bottom-nav';
@@ -140,15 +141,7 @@ export default function App() {
         },
       }}
     >
-      <div
-        style={{
-          minHeight: '100vh',
-          background: '#FBF6F0',
-          color: '#1C1413',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <div className="app-shell">
         <Header
           screen={screen}
           onNav={handleNav}
@@ -157,27 +150,24 @@ export default function App() {
           isMobile={isMobile}
         />
         {isOffline && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 7,
-              background: '#FEF5D4',
-              borderBottom: '1px solid #F5D97A',
-              padding: '9px 16px',
-              fontSize: 13,
-              fontWeight: 700,
-              color: '#7A5C1E',
-            }}
-          >
+          <div className="offline-banner">
             <WifiOff size={14} />
             You're offline — showing cached data
           </div>
         )}
-        <main style={{ flex: 1, padding: isMobile ? '18px 16px 108px' : '32px 30px 44px' }}>
-          <div style={{ maxWidth: isMobile ? '100%' : 960, margin: '0 auto', width: '100%' }}>
-            <Outlet />
+        <main className="app-main">
+          <div className="app-content">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28, ease: [0.2, 0.7, 0.2, 1] }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
         {isMobile &&
