@@ -19,8 +19,8 @@ export const spring: Transition = { type: 'spring', bounce: 0.35, visualDuration
 /** Softer spring for large surfaces entering the screen. */
 export const gentle: Transition = { type: 'spring', bounce: 0.3, visualDuration: 0.48 };
 
-/** Page-to-page slide: quick with a small overshoot so edges don't gap. */
-export const pageSpring: Transition = { type: 'spring', bounce: 0.2, visualDuration: 0.42 };
+/** Page-to-page slide: settles in ~200ms (90% of the way in ~100ms) with a hint of overshoot. */
+export const pageSpring: Transition = { type: 'spring', bounce: 0.12, visualDuration: 0.16 };
 
 /** Data marks (bars, progress) settle with an obvious bounce. */
 export const barSpring: Transition = { type: 'spring', bounce: 0.45, visualDuration: 0.6 };
