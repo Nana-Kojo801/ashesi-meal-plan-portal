@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CafeBadge } from '../../../components/cafe-badge';
 import { LoadingRows } from '../../../components/skeleton';
-import { bouncy, slideIn, stagger, tapScale } from '../../../lib/motion';
+import { bouncy, slideIn, stagger, tapScale, useEntrance } from '../../../lib/motion';
 import { formatTime, fmtMoney } from '../../../lib/utils';
 import type { HistoryItem } from '../../../types';
 
@@ -14,6 +14,7 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ items, isLoading, total }: RecentActivityProps) {
+  const entrance = useEntrance();
   const navigate = useNavigate();
   return (
     <section className="card list-card" aria-label="Today's purchases">
@@ -33,7 +34,7 @@ export function RecentActivity({ items, isLoading, total }: RecentActivityProps)
       ) : items.length === 0 ? (
         <p className="empty-note">No purchases yet today.</p>
       ) : (
-        <motion.div variants={stagger} initial="hidden" animate="show">
+        <motion.div variants={stagger} initial={entrance} animate="show">
           {items.map((tx, index) => (
             <motion.div className="list-row" key={`${tx.date}-${tx.name}-${index}`} variants={slideIn}>
               <CafeBadge name={tx.transaction_point} />

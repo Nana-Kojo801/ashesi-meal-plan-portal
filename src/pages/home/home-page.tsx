@@ -13,10 +13,11 @@ import { WeekCard } from './components/week-card';
 import { HabitsCard } from './components/habits-card';
 import { RecentActivity } from './components/recent-activity';
 import { DashboardSkeleton } from '../../components/skeleton';
-import { rise, stagger, tapScale } from '../../lib/motion';
+import { rise, stagger, tapScale, useEntrance } from '../../lib/motion';
 import type { HistoryItem } from '../../types';
 
 export function HomePage() {
+  const entrance = useEntrance();
   const { balanceData, loadingBalance: loading, balanceError: error, retryBalance } = useAppContext();
   const { studentId } = useSessionStore();
   const today = todayISO();
@@ -75,7 +76,7 @@ export function HomePage() {
   const dailyLimit = balanceData.daily_spending_limit;
 
   return (
-    <motion.div className="page" variants={stagger} initial="hidden" animate="show">
+    <motion.div className="page" variants={stagger} initial={entrance} animate="show">
       <motion.header className="page-header" variants={rise}>
         <div>
           <p className="page-eyebrow">{longDate()}</p>

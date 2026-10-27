@@ -24,9 +24,9 @@ export function Toast({ toast, onDismiss, isMobile }: ToastProps) {
           <motion.div
             key={toast.message}
             className={`toast ${toast.type}`}
-            initial={{ opacity: 0, y: 40, scale: 0.85 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.9 }}
+            initial={{ opacity: 0, transform: 'translateY(40px) scale(0.85)' }}
+            animate={{ opacity: 1, transform: 'translateY(0px) scale(1)' }}
+            exit={{ opacity: 0, transform: 'translateY(24px) scale(0.9)' }}
             transition={bouncy}
             onClick={onDismiss}
           >

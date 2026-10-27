@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { CalendarDays, Receipt, Target, TrendingDown, TrendingUp } from 'lucide-react';
 import { Skeleton } from '../../../components/skeleton';
-import { bouncy, rise, stagger } from '../../../lib/motion';
+import { rise, stagger, useEntrance } from '../../../lib/motion';
 import { fmtMoney } from '../../../lib/utils';
 import type { AnalyticsStats } from '../../reports/hooks/use-analytics';
 
@@ -54,6 +54,7 @@ function buildTiles(stats: NonNullable<AnalyticsStats>): Tile[] {
 }
 
 export function StatTiles({ stats, loading }: { stats: AnalyticsStats | null; loading: boolean }) {
+  const entrance = useEntrance();
   if (loading || !stats) {
     return (
       <div className="tile-grid two">
@@ -68,9 +69,9 @@ export function StatTiles({ stats, loading }: { stats: AnalyticsStats | null; lo
   }
 
   return (
-    <motion.div className="tile-grid two" variants={stagger} initial="hidden" animate="show">
+    <motion.div className="tile-grid two" variants={stagger} initial={entrance} animate="show">
       {buildTiles(stats).map(({ label, value, pill, tone, Icon }) => (
-        <motion.div className="card tile" key={label} variants={rise} whileHover={{ y: -3 }} transition={bouncy}>
+        <motion.div className="card tile" key={label} variants={rise}>
           <span className="icon-chip"><Icon size={19} /></span>
           <div className="tile-body">
             <span className="tile-label">{label}</span>

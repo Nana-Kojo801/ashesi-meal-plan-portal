@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, ChevronRight, Star, Store, Sun } from 'lucide-react';
-import { bouncy, pressScale, slideIn, stagger } from '../../../lib/motion';
+import { bouncy, pressScale, slideIn, stagger, useEntrance } from '../../../lib/motion';
 import { fmtMoney } from '../../../lib/utils';
 import type { AnalyticsStats } from '../../reports/hooks/use-analytics';
 
 const FULL_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export function HabitsCard({ stats }: { stats: NonNullable<AnalyticsStats> }) {
+  const entrance = useEntrance();
   const navigate = useNavigate();
   const periods = [
     { label: 'Morning', value: stats.morning },
@@ -30,7 +31,7 @@ export function HabitsCard({ stats }: { stats: NonNullable<AnalyticsStats> }) {
         <h2 className="card-title">Your habits</h2>
         <span className="card-sub">Last 30 days</span>
       </div>
-      <motion.div variants={stagger} initial="hidden" animate="show">
+      <motion.div variants={stagger} initial={entrance} animate="show">
         {rows.map(({ label, value, sub, Icon }) => (
           <motion.div className="list-row" key={label} variants={slideIn}>
             <span className="icon-chip small"><Icon size={17} /></span>

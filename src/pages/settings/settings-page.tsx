@@ -6,7 +6,7 @@ import { resetPin } from '../../api';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
 import { changeTheme, useThemeStore, type ThemePref } from '../../stores/theme-store';
-import { bouncy, pressScale, rise, stagger, tapScale } from '../../lib/motion';
+import { bouncy, pressScale, rise, stagger, tapScale, useEntrance } from '../../lib/motion';
 import { fmtMoney } from '../../lib/utils';
 
 const THEMES: { value: ThemePref; label: string; Icon: typeof Sun }[] = [
@@ -16,6 +16,7 @@ const THEMES: { value: ThemePref; label: string; Icon: typeof Sun }[] = [
 ];
 
 export function SettingsPage() {
+  const entrance = useEntrance();
   const { balanceData, loadingBalance, studentName, logout, showToast } = useAppContext();
   const { studentId } = useSessionStore();
   const themePref = useThemeStore((state) => state.pref);
@@ -52,7 +53,7 @@ export function SettingsPage() {
   if (loadingBalance && !balanceData) return <SettingsSkeleton />;
 
   return (
-    <motion.div className="page" variants={stagger} initial="hidden" animate="show">
+    <motion.div className="page" variants={stagger} initial={entrance} animate="show">
       <motion.header className="page-header" variants={rise}>
         <div>
           <h1 className="page-title">Settings</h1>
@@ -146,7 +147,7 @@ export function SettingsPage() {
 
           <motion.section className="settings-section" aria-labelledby="session-title" variants={rise}>
             <h2 className="section-label" id="session-title">Session</h2>
-            <motion.button type="button" className="card signout" onClick={logout} whileTap={pressScale} whileHover={{ y: -2 }} transition={bouncy}>
+            <motion.button type="button" className="card signout" onClick={logout} whileTap={pressScale} transition={bouncy}>
               <LogOut size={19} /> Sign out
             </motion.button>
           </motion.section>

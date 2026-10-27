@@ -6,7 +6,7 @@ import { CafeBadge } from '../../components/cafe-badge';
 import { useAppContext } from '../../context/app-context';
 import { useSpendingHistory } from '../../hooks/use-spending-history';
 import { cafeTone } from '../../lib/cafe';
-import { barSpring, bouncy, rise, slideIn, stagger } from '../../lib/motion';
+import { barSpring, rise, slideIn, stagger, useEntrance } from '../../lib/motion';
 import { fmtMoney } from '../../lib/utils';
 import { useAnalytics } from './hooks/use-analytics';
 import { SpendChart } from './components/spend-chart';
@@ -23,8 +23,8 @@ function Meter({ pct, className = '', delay = 0 }: { pct: number; className?: st
     <div className="meter">
       <motion.span
         className={`meter-fill ${className}`}
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
+        initial={{ transform: 'scaleX(0)' }}
+        animate={{ transform: 'scaleX(1)' }}
         style={{ width: `${Math.max(2, Math.min(100, pct))}%` }}
         transition={{ ...barSpring, delay }}
       />
@@ -70,6 +70,7 @@ function CompareCard({ title, nowLabel, now, prevLabel, prev, note }: ComparePro
 }
 
 export function ReportsPage() {
+  const entrance = useEntrance();
   const { balanceData } = useAppContext();
   const { data: history = [], isLoading } = useSpendingHistory();
   const stats = useAnalytics(history, balanceData);
@@ -122,7 +123,7 @@ export function ReportsPage() {
   const dayMax = Math.max(...days.map((day) => day.spend), 1);
 
   return (
-    <motion.div className="page" variants={stagger} initial="hidden" animate="show">
+    <motion.div className="page" variants={stagger} initial={entrance} animate="show">
       <motion.header className="page-header" variants={rise}>
         <div>
           <h1 className="page-title">Insights</h1>
@@ -133,7 +134,7 @@ export function ReportsPage() {
 
       <motion.div className="tile-grid four" variants={stagger}>
         {kpis.map((kpi) => (
-          <motion.div className="card tile stacked" key={kpi.label} variants={rise} whileHover={{ y: -3 }} transition={bouncy}>
+          <motion.div className="card tile stacked" key={kpi.label} variants={rise}>
             <span className="tile-label">{kpi.label}</span>
             <span className="tile-value">{kpi.value}</span>
             <span className="tile-sub">{kpi.sub}</span>
@@ -237,8 +238,8 @@ export function ReportsPage() {
                   key={day.label}
                   className={`bar ${day.index === stats.peakDowIdx ? 'accent' : ''} ${day.spend === 0 ? 'empty' : ''}`}
                   style={{ height: `${(day.spend / dayMax) * 100}%` }}
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
+                  initial={{ transform: 'scaleY(0)' }}
+                  animate={{ transform: 'scaleY(1)' }}
                   transition={{ ...barSpring, delay: 0.3 + i * 0.05 }}
                   title={`${FULL_DAYS[day.index]}: ${fmtMoney(day.spend)}`}
                 />

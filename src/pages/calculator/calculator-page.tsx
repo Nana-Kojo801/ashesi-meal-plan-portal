@@ -10,7 +10,7 @@ import { Sheet } from '../../components/sheet';
 import { fetchHistory } from '../../api';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
-import { barSpring, bouncy, pageSpring, rise, spring, stagger, tapScale } from '../../lib/motion';
+import { barSpring, bouncy, pageSpring, rise, spring, stagger, tapScale, useEntrance } from '../../lib/motion';
 import { fmtMoney, todayISO } from '../../lib/utils';
 import type { HistoryItem } from '../../types';
 
@@ -27,9 +27,9 @@ function nDaysAgoISO(days: number) {
 const keyFor = (cafe: string, name: string) => `${cafe}::${name}`;
 
 const menuVariants: Variants = {
-  hidden: (direction: number) => ({ x: direction * 56, opacity: direction ? 0 : 1 }),
-  show: { x: 0, opacity: 1, transition: { ...pageSpring, staggerChildren: 0.035 } },
-  exit: (direction: number) => ({ x: direction * -56, opacity: 0, transition: pageSpring }),
+  hidden: (direction: number) => ({ transform: `translateX(${direction * 56}px)`, opacity: direction ? 0 : 1 }),
+  show: { transform: 'translateX(0px)', opacity: 1, transition: { ...pageSpring, staggerChildren: 0.035 } },
+  exit: (direction: number) => ({ transform: `translateX(${direction * -56}px)`, opacity: 0, transition: pageSpring }),
 };
 
 function Stepper({ qty, name, onAdd, onRemove, variant = 'accent' }: { qty: number; name: string; onAdd: () => void; onRemove: () => void; variant?: 'accent' | 'soft' }) {
@@ -51,6 +51,7 @@ function Stepper({ qty, name, onAdd, onRemove, variant = 'accent' }: { qty: numb
 }
 
 export function CalculatorPage() {
+  const entrance = useEntrance();
   const { balanceData, isMobile } = useAppContext();
   const { studentId } = useSessionStore();
   const [activeCafe, setActiveCafe] = useState<string | null>(null);
@@ -147,9 +148,9 @@ export function CalculatorPage() {
               className="order-row"
               key={keyFor(item.cafe, item.name)}
               layout
-              initial={{ opacity: 0, x: 24, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -24, scale: 0.95 }}
+              initial={{ opacity: 0, transform: 'translateX(24px)' }}
+              animate={{ opacity: 1, transform: 'translateX(0px)' }}
+              exit={{ opacity: 0, transform: 'translateX(-24px)' }}
               transition={spring}
             >
               <div className="list-text">
@@ -167,9 +168,9 @@ export function CalculatorPage() {
         <div className="meter">
           <motion.span
             className={`meter-fill ${over ? 'accent' : 'ink'}`}
-            style={{ width: '100%', originX: 0 }}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: balance > 0 ? Math.min(1, cartTotal / balance) : cartTotal > 0 ? 1 : 0 }}
+            style={{ width: '100%' }}
+            initial={{ transform: 'scaleX(0)' }}
+            animate={{ transform: `scaleX(${balance > 0 ? Math.min(1, cartTotal / balance) : cartTotal > 0 ? 1 : 0})` }}
             transition={barSpring}
           />
         </div>
@@ -182,9 +183,9 @@ export function CalculatorPage() {
         <motion.div
           key={over ? 'over' : 'ok'}
           className={`status ${over ? 'bad' : 'good'}`}
-          initial={{ opacity: 0, y: 8, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -8, scale: 0.96 }}
+          initial={{ opacity: 0, transform: 'translateY(8px)' }}
+          animate={{ opacity: 1, transform: 'translateY(0px)' }}
+          exit={{ opacity: 0, transform: 'translateY(-8px)' }}
           transition={bouncy}
         >
           {over ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />}
@@ -202,7 +203,7 @@ export function CalculatorPage() {
 
   return (
     <>
-      <motion.div className="page" variants={stagger} initial="hidden" animate="show">
+      <motion.div className="page" variants={stagger} initial={entrance} animate="show">
         <motion.header className="page-header" variants={rise}>
           <div>
             <h1 className="page-title">Calculator</h1>
@@ -215,7 +216,7 @@ export function CalculatorPage() {
         ) : (
           <div className="columns">
             <motion.section className="column-main" aria-label="Menu" variants={rise}>
-              <div role="group" aria-label="Choose a café" className="cafe-tabs glass-soft" data-no-swipe>
+              <div role="group" aria-label="Choose a café" className="cafe-tabs glass-soft">
                 {cafes.map(({ cafe, items }) => {
                   const active = cafe === selectedCafe;
                   const inCart = cartItems.filter((item) => item.cafe === cafe).reduce((sum, item) => sum + item.qty, 0);

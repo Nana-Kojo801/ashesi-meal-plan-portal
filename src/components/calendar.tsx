@@ -14,9 +14,9 @@ interface CalendarProps {
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const monthSlide: Variants = {
-  enter: (direction: number) => ({ opacity: 0, x: direction * 40 }),
-  center: { opacity: 1, x: 0 },
-  exit: (direction: number) => ({ opacity: 0, x: direction * -40 }),
+  enter: (direction: number) => ({ opacity: 0, transform: `translateX(${direction * 40}px)` }),
+  center: { opacity: 1, transform: 'translateX(0px)' },
+  exit: (direction: number) => ({ opacity: 0, transform: `translateX(${direction * -40}px)` }),
 };
 
 function monthStart(iso: string) {

@@ -63,7 +63,6 @@ export function SpendChart({ data, dailyLimit }: SpendChartProps) {
         <div
           ref={plotRef}
           className="chart-plot"
-          data-no-swipe
           onPointerMove={track}
           onPointerDown={track}
           onPointerLeave={() => setActive(null)}

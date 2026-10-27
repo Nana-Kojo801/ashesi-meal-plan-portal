@@ -13,8 +13,8 @@ export function BottomNav({ screen, onNav }: BottomNavProps) {
     <motion.nav
       className="tab-bar glass"
       aria-label="Main navigation"
-      initial={{ y: 90, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
+      initial={{ transform: 'translateY(90px)', opacity: 0 }}
+      animate={{ transform: 'translateY(0px)', opacity: 1 }}
       transition={{ ...bouncy, delay: 0.1 }}
     >
       {NAV_ITEMS.map(({ key, label, Icon }) => {

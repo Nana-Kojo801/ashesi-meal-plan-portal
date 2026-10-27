@@ -21,7 +21,6 @@ export function WeekCard({ days, dailyLimit }: WeekCardProps) {
       className="card week-card"
       onClick={() => navigate('/reports')}
       whileTap={pressScale}
-      whileHover={{ y: -3 }}
       transition={bouncy}
       aria-label={`Last 7 days: ${fmtMoney(total)} spent. Open insights`}
     >
@@ -43,8 +42,8 @@ export function WeekCard({ days, dailyLimit }: WeekCardProps) {
             key={day.date}
             className={`bar ${i === lastIndex ? 'accent' : ''} ${day.spend === 0 ? 'empty' : ''}`}
             style={{ height: `${(day.spend / top) * 100}%` }}
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
+            initial={{ transform: 'scaleY(0)' }}
+            animate={{ transform: 'scaleY(1)' }}
             transition={{ ...barSpring, delay: 0.2 + i * 0.05 }}
           />
         ))}

@@ -1,9 +1,13 @@
+import { createContext, useContext } from 'react';
 import type { Transition, Variants } from 'framer-motion';
 
 /**
- * Springs are tuned by perceived duration and bounce so they stay lively on
- * every device. Only transform and opacity are animated, which run on the
- * compositor and stay smooth even while the main thread is busy.
+ * Performance rule for this app: entrance and page animations use the full
+ * `transform` string plus `opacity`. Motion hands those to the browser's
+ * compositor (Web Animations API), so they stay smooth on phones even while
+ * React is busy rendering. The `x` / `y` / `scale` shorthands run on the main
+ * thread every frame, so they are kept to short, single-element interactions
+ * such as taps.
  */
 
 /** Snappy, very bouncy spring — buttons, pills, thumbs, badges. */
@@ -30,11 +34,26 @@ export const stagger: Variants = {
 };
 
 export const rise: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: spring },
+  hidden: { opacity: 0, transform: 'translateY(16px)' },
+  show: { opacity: 1, transform: 'translateY(0px)', transition: spring },
 };
 
 export const slideIn: Variants = {
-  hidden: { opacity: 0, x: -14 },
-  show: { opacity: 1, x: 0, transition: spring },
+  hidden: { opacity: 0, transform: 'translateX(-14px)' },
+  show: { opacity: 1, transform: 'translateX(0px)', transition: spring },
 };
+
+/** Grow-in for bars and meters; pair with a CSS transform-origin. */
+export const growY = { initial: { transform: 'scaleY(0)' }, animate: { transform: 'scaleY(1)' } };
+export const growX = (fraction: number) => ({ initial: { transform: 'scaleX(0)' }, animate: { transform: `scaleX(${fraction})` } });
+
+/**
+ * Whether a freshly mounted page should play its staggered entrance. False
+ * while a page slides in on mobile: the slide is the animation, and animating
+ * every card on top of it is what makes low-end phones stutter.
+ */
+export const EntranceContext = createContext(true);
+
+export function useEntrance(): 'hidden' | false {
+  return useContext(EntranceContext) ? 'hidden' : false;
+}

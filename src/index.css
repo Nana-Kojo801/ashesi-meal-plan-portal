@@ -21,9 +21,11 @@
   --glass-strong-fill: rgba(255, 255, 255, .9);
   --glass-stroke: rgba(23, 18, 15, .07);
   --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 1);
-  --glass-shadow: 0 1px 2px rgba(23, 18, 15, .04), 0 12px 32px -16px rgba(23, 18, 15, .16);
-  --glass-shadow-lg: 0 24px 60px -24px rgba(23, 18, 15, .28);
-  --blur: blur(24px) saturate(180%);
+  /* Shadow blur radii stay small: big blurs are costly to rasterise on phones. */
+  --glass-shadow: 0 1px 2px rgba(23, 18, 15, .05), 0 8px 18px -12px rgba(23, 18, 15, .2);
+  --glass-shadow-lg: 0 16px 36px -18px rgba(23, 18, 15, .3);
+  /* Kept modest: the blur is recomputed every frame content moves beneath it. */
+  --blur: blur(14px) saturate(160%);
 
   --accent: #C0121F;
   --accent-text: #B0101C;
@@ -77,8 +79,8 @@
   --glass-strong-fill: rgba(30, 30, 33, .92);
   --glass-stroke: rgba(255, 255, 255, .08);
   --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, .07);
-  --glass-shadow: 0 12px 32px -16px rgba(0, 0, 0, .8);
-  --glass-shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, .85);
+  --glass-shadow: 0 8px 18px -12px rgba(0, 0, 0, .8);
+  --glass-shadow-lg: 0 16px 36px -16px rgba(0, 0, 0, .85);
 
   --accent: #E5303F;
   --accent-text: #FF6B75;
@@ -200,7 +202,7 @@ h1, h2, h3, p { margin: 0; }
 .app-shell { display: flex; min-height: 100dvh; background: var(--bg); }
 .app-main { position: relative; flex: 1; min-width: 0; padding: 40px 40px 64px 32px; overflow-x: clip; }
 /* Opaque so the incoming page fully covers the outgoing one while they slide. */
-.route-view { min-height: 60vh; background: var(--bg); touch-action: pan-y; }
+.route-view { min-height: 60vh; background: var(--bg); }
 
 .offline-banner { max-width: 1120px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--text-2); }
 
@@ -303,7 +305,7 @@ h1, h2, h3, p { margin: 0; }
 
 /* ── Home ───────────────────────────────────────────────────── */
 
-.hero-card { position: relative; overflow: hidden; padding: 30px 32px; border-radius: 30px; background: var(--hero); color: #FFFFFF; border: 1px solid rgba(255,255,255,.22); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -18px 40px rgba(60,0,8,.22), 0 28px 56px -28px rgba(143,13,23,.6); display: flex; flex-direction: column; gap: 26px; isolation: isolate; }
+.hero-card { position: relative; overflow: hidden; padding: 30px 32px; border-radius: 30px; background: var(--hero); color: #FFFFFF; border: 1px solid rgba(255,255,255,.22); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -18px 40px rgba(60,0,8,.22), 0 16px 32px -18px rgba(143,13,23,.55); display: flex; flex-direction: column; gap: 26px; isolation: isolate; }
 .hero-gloss { position: absolute; z-index: -1; left: -10%; top: -60%; width: 120%; height: 95%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.24), rgba(255,255,255,0)); pointer-events: none; }
 .hero-watermark { position: absolute; z-index: -1; right: -70px; bottom: -110px; opacity: .07; color: #FFFFFF; pointer-events: none; }
 .hero-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
@@ -597,9 +599,23 @@ h1, h2, h3, p { margin: 0; }
   .desktop-only { display: none !important; }
   .mobile-only { display: inline; }
 
-  .app-main { padding: calc(env(safe-area-inset-top) + 28px) 0 calc(120px + env(safe-area-inset-bottom)); }
-  .route-view { min-height: 100dvh; padding: 0 16px; }
-  .offline-banner { margin: 0 16px 12px; }
+  /*
+   * Phone shell: each page is its own viewport-sized scroller stacked in a
+   * fixed frame. Page slides then move one screen-sized layer instead of a
+   * whole multi-screen page, which is what kept phones from stuttering.
+   */
+  .app-main { position: fixed; inset: 0; padding: 0; overflow: hidden; }
+  .route-view {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: calc(env(safe-area-inset-top) + 28px) 16px calc(120px + env(safe-area-inset-bottom));
+  }
+  .offline-banner { position: absolute; z-index: 5; top: calc(env(safe-area-inset-top) + 8px); left: 16px; right: 16px; margin: 0; }
   .page { gap: 16px; }
   .columns, .column-main, .column-side { gap: 16px; }
   .page-header { align-items: center; flex-wrap: nowrap; }

@@ -11,7 +11,7 @@ import { Calendar } from '../../components/calendar';
 import { Sheet } from '../../components/sheet';
 import { AnimatedNumber } from '../../components/animated-number';
 import { TransactionList } from './components/transaction-list';
-import { bouncy, rise, stagger, tapScale } from '../../lib/motion';
+import { bouncy, rise, stagger, tapScale, useEntrance } from '../../lib/motion';
 import type { HistoryItem } from '../../types';
 
 export type Filter = 'today' | 'yesterday' | 'last2' | 'custom';
@@ -27,6 +27,7 @@ function shortDay(iso: string) {
 }
 
 export function HistoryPage() {
+  const entrance = useEntrance();
   const { isMobile } = useAppContext();
   const { studentId } = useSessionStore();
   const [filter, setFilter] = useState<Filter>('today');
@@ -91,7 +92,7 @@ export function HistoryPage() {
   const rangeHint = pickingEnd ? 'Tap an end date, or keep this single day' : 'Tap a day, then another to pick a range';
 
   return (
-    <motion.div className="page" variants={stagger} initial="hidden" animate="show">
+    <motion.div className="page" variants={stagger} initial={entrance} animate="show">
       <motion.header className="page-header" variants={rise}>
         <div>
           <h1 className="page-title">History</h1>

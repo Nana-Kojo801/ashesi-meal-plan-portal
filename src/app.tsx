@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef, type MouseEvent, type PointerEvent } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation, useOutlet } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, MotionConfig, motion, useDragControls, type PanInfo, type Variants } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion, type Variants } from 'framer-motion';
 import { WifiOff } from 'lucide-react';
 import { Sidebar } from './components/header';
 import { BottomNav } from './components/bottom-nav';
@@ -15,7 +15,7 @@ import { useSessionStore } from './stores/session-store';
 import { useMobile } from './hooks/use-mobile';
 import { useOffline } from './hooks/use-offline';
 import { readBalanceCache, writeBalanceCache, clearBalanceCache, BALANCE_CACHE_TTL } from './hooks/use-balance-cache';
-import { pageSpring, spring } from './lib/motion';
+import { EntranceContext, pageSpring, spring } from './lib/motion';
 import type { Screen, ToastState } from './types';
 
 const PATHS: Record<Screen, string> = {
@@ -30,17 +30,26 @@ const SCREEN_ORDER = NAV_ITEMS.map((item) => item.key);
 
 interface PageCustom { direction: number; isMobile: boolean }
 
+/**
+ * Page slides animate the full transform string so they run on the
+ * compositor. On mobile each page is a viewport-sized scroller, so only a
+ * screen-sized layer moves; it travels the full width. Desktop uses a short
+ * slide with a fade.
+ */
+const slide = ({ isMobile }: PageCustom, offset: number, y = 0) =>
+  isMobile ? `translate3d(${offset * 100}%, ${y}px, 0px)` : `translate3d(${offset * 48}px, ${y}px, 0px)`;
+
 const pageVariants: Variants = {
-  enter: ({ direction, isMobile }: PageCustom) => (
-    direction === 0
-      ? { x: 0, y: 18, opacity: 0 }
-      : { x: isMobile ? `${direction * 100}%` : direction * 56, y: 0, opacity: isMobile ? 1 : 0 }
+  enter: (custom: PageCustom) => (
+    custom.direction === 0
+      ? { opacity: 0, transform: slide(custom, 0, 16) }
+      : { opacity: custom.isMobile ? 1 : 0, transform: slide(custom, custom.direction) }
   ),
-  center: { x: 0, y: 0, opacity: 1 },
-  exit: ({ direction, isMobile }: PageCustom) => (
-    direction === 0
+  center: (custom: PageCustom) => ({ opacity: 1, transform: slide(custom, 0) }),
+  exit: (custom: PageCustom) => (
+    custom.direction === 0
       ? { opacity: 0, transition: { duration: 0.12 } }
-      : { x: isMobile ? `${direction * -32}%` : direction * -56, opacity: isMobile ? 0.5 : 0 }
+      : { opacity: custom.isMobile ? 0.6 : 0, transform: slide(custom, custom.direction * (custom.isMobile ? -0.3 : -1)) }
   ),
 };
 
@@ -88,26 +97,6 @@ export default function App() {
   const [nav, setNav] = useState({ index: screenIndex, direction: 0 });
   if (nav.index !== screenIndex) setNav({ index: screenIndex, direction: Math.sign(screenIndex - nav.index) });
   const transitionCustom = { direction: nav.direction, isMobile };
-
-  const swipeControls = useDragControls();
-  const swiped = useRef(false);
-  const startSwipe = (event: PointerEvent<HTMLDivElement>) => {
-    swiped.current = false;
-    if (!isMobile || (event.target as Element).closest('[data-no-swipe], input')) return;
-    swipeControls.start(event);
-  };
-  // A swipe that began on a button must not also count as a tap on it.
-  const swallowClickAfterSwipe = (event: MouseEvent<HTMLDivElement>) => {
-    if (!swiped.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-    swiped.current = false;
-  };
-  const endSwipe = (_: unknown, info: PanInfo) => {
-    const swipe = info.offset.x + info.velocity.x * 0.2;
-    const next = SCREEN_ORDER[screenIndex + (swipe < -80 ? 1 : swipe > 80 ? -1 : 0)];
-    if (next && next !== screen) navigate(PATHS[next]);
-  };
 
   // Only refetch balance on dashboard visit if data is older than 1 minute.
   useEffect(() => {
@@ -206,9 +195,9 @@ export default function App() {
               {isOffline && (
                 <motion.div
                   className="offline-banner glass-soft"
-                  initial={{ opacity: 0, y: -12, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.95 }}
+                  initial={{ opacity: 0, transform: 'translateY(-12px)' }}
+                  animate={{ opacity: 1, transform: 'translateY(0px)' }}
+                  exit={{ opacity: 0, transform: 'translateY(-12px)' }}
                   transition={spring}
                 >
                   <WifiOff size={14} />
@@ -216,30 +205,23 @@ export default function App() {
                 </motion.div>
               )}
             </AnimatePresence>
-            <AnimatePresence mode="popLayout" initial={false} custom={transitionCustom}>
-              <motion.div
-                key={location.pathname}
-                className="route-view"
-                custom={transitionCustom}
-                variants={pageVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={pageSpring}
-                drag={isMobile ? 'x' : false}
-                dragListener={false}
-                dragControls={swipeControls}
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.22}
-                dragDirectionLock
-                onPointerDown={startSwipe}
-                onDragStart={() => { swiped.current = true; }}
-                onDragEnd={endSwipe}
-                onClickCapture={swallowClickAfterSwipe}
-              >
-                {outlet}
-              </motion.div>
-            </AnimatePresence>
+            <EntranceContext.Provider value={!(isMobile && nav.direction !== 0)}>
+              {/* Mobile pages are absolutely positioned scrollers, so both can animate in place. */}
+              <AnimatePresence mode={isMobile ? 'sync' : 'popLayout'} initial={false} custom={transitionCustom}>
+                <motion.div
+                  key={location.pathname}
+                  className="route-view"
+                  custom={transitionCustom}
+                  variants={pageVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={pageSpring}
+                >
+                  {outlet}
+                </motion.div>
+              </AnimatePresence>
+            </EntranceContext.Provider>
           </main>
           {isMobile && createPortal(<BottomNav screen={screen} onNav={handleNav} />, document.body)}
           {toastPortal}
