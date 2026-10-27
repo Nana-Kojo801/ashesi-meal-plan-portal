@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, CheckCircle2, ChevronRight, Minus, Plus, Search, X } from 'lucide-react';
 import { CalculatorSkeleton } from '../../components/skeleton';
@@ -10,7 +10,7 @@ import { Sheet } from '../../components/sheet';
 import { fetchHistory } from '../../api';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
-import { barSpring, bouncy, rise, spring, stagger, tapScale } from '../../lib/motion';
+import { barSpring, bouncy, pageSpring, rise, spring, stagger, tapScale } from '../../lib/motion';
 import { fmtMoney, todayISO } from '../../lib/utils';
 import type { HistoryItem } from '../../types';
 
@@ -26,11 +26,16 @@ function nDaysAgoISO(days: number) {
 
 const keyFor = (cafe: string, name: string) => `${cafe}::${name}`;
 
+const menuVariants: Variants = {
+  hidden: (direction: number) => ({ x: direction * 56, opacity: direction ? 0 : 1 }),
+  show: { x: 0, opacity: 1, transition: { ...pageSpring, staggerChildren: 0.035 } },
+  exit: (direction: number) => ({ x: direction * -56, opacity: 0, transition: pageSpring }),
+};
+
 function Stepper({ qty, name, onAdd, onRemove, variant = 'accent' }: { qty: number; name: string; onAdd: () => void; onRemove: () => void; variant?: 'accent' | 'soft' }) {
   return (
     <motion.div
       className={`stepper ${variant}`}
-      layout
       initial={{ opacity: 0, scale: 0.6 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.6 }}
@@ -80,6 +85,11 @@ export function CalculatorPage() {
 
   const selectedCafe = activeCafe ?? cafes[0]?.cafe ?? null;
   const activeData = cafes.find((entry) => entry.cafe === selectedCafe);
+
+  // The menu slides the same way the café tabs are ordered, like page swipes.
+  const cafeIndex = cafes.findIndex((entry) => entry.cafe === selectedCafe);
+  const [menuSlide, setMenuSlide] = useState({ index: cafeIndex, direction: 0 });
+  if (menuSlide.index !== cafeIndex) setMenuSlide({ index: cafeIndex, direction: Math.sign(cafeIndex - menuSlide.index) });
   const filteredItems = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!activeData) return [];
@@ -151,13 +161,15 @@ export function CalculatorPage() {
           ))}
         </AnimatePresence>
       </div>
-      <motion.div className="order-summary" layout transition={spring}>
+      <div className="order-summary">
         <div className="summary-line"><span>Available today</span><strong>{fmtMoney(balance)}</strong></div>
         <div className="summary-line"><span>This order</span><strong><AnimatedNumber value={cartTotal} format={fmtMoney} /></strong></div>
         <div className="meter">
           <motion.span
             className={`meter-fill ${over ? 'accent' : 'ink'}`}
-            animate={{ width: `${balance > 0 ? Math.min(100, (cartTotal / balance) * 100) : cartTotal > 0 ? 100 : 0}%` }}
+            style={{ width: '100%', originX: 0 }}
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: balance > 0 ? Math.min(1, cartTotal / balance) : cartTotal > 0 ? 1 : 0 }}
             transition={barSpring}
           />
         </div>
@@ -165,7 +177,7 @@ export function CalculatorPage() {
           <span>Left after</span>
           <strong className={over ? 'text-bad' : 'text-good'}><AnimatedNumber value={afterPurchase} format={fmtMoney} /></strong>
         </div>
-      </motion.div>
+      </div>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={over ? 'over' : 'ok'}
@@ -203,7 +215,7 @@ export function CalculatorPage() {
         ) : (
           <div className="columns">
             <motion.section className="column-main" aria-label="Menu" variants={rise}>
-              <div role="group" aria-label="Choose a café" className="cafe-tabs glass-soft">
+              <div role="group" aria-label="Choose a café" className="cafe-tabs glass-soft" data-no-swipe>
                 {cafes.map(({ cafe, items }) => {
                   const active = cafe === selectedCafe;
                   const inCart = cartItems.filter((item) => item.cafe === cafe).reduce((sum, item) => sum + item.qty, 0);
@@ -240,11 +252,20 @@ export function CalculatorPage() {
               {filteredItems.length === 0 ? (
                 <div className="card empty-state"><p>No items match “{search}”.</p></div>
               ) : (
-                <motion.div className="menu-grid" key={selectedCafe} variants={stagger} initial="hidden" animate="show">
+                <AnimatePresence mode="popLayout" initial={false} custom={menuSlide.direction}>
+                <motion.div
+                  className="menu-grid"
+                  key={selectedCafe}
+                  custom={menuSlide.direction}
+                  variants={menuVariants}
+                  initial="hidden"
+                  animate="show"
+                  exit="exit"
+                >
                   {filteredItems.map((item) => {
                     const qty = cart.get(keyFor(selectedCafe!, item.name))?.qty ?? 0;
                     return (
-                      <motion.div className={`menu-card card ${qty ? 'in-cart' : ''}`} key={item.name} variants={rise} layout transition={spring}>
+                      <motion.div className={`menu-card card ${qty ? 'in-cart' : ''}`} key={item.name} variants={rise}>
                         <div className="menu-text">
                           <strong>{item.name}</strong>
                           <small><span className="menu-price-inline">{fmtMoney(item.price)} · </span>Ordered {item.count}×</small>
@@ -276,6 +297,7 @@ export function CalculatorPage() {
                     );
                   })}
                 </motion.div>
+                </AnimatePresence>
               )}
             </motion.section>
 

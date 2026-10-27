@@ -1,31 +1,40 @@
 import type { Transition, Variants } from 'framer-motion';
 
-/** Snappy spring with a little overshoot — buttons, pills, thumbs. */
-export const bouncy: Transition = { type: 'spring', stiffness: 520, damping: 24, mass: 0.8 };
+/**
+ * Springs are tuned by perceived duration and bounce so they stay lively on
+ * every device. Only transform and opacity are animated, which run on the
+ * compositor and stay smooth even while the main thread is busy.
+ */
+
+/** Snappy, very bouncy spring — buttons, pills, thumbs, badges. */
+export const bouncy: Transition = { type: 'spring', bounce: 0.5, visualDuration: 0.32 };
 
 /** Default UI spring — cards, sheets, list items. */
-export const spring: Transition = { type: 'spring', stiffness: 360, damping: 28, mass: 0.9 };
+export const spring: Transition = { type: 'spring', bounce: 0.35, visualDuration: 0.38 };
 
-/** Slow, soft spring — page entrances and large surfaces. */
-export const gentle: Transition = { type: 'spring', stiffness: 210, damping: 24, mass: 1 };
+/** Softer spring for large surfaces entering the screen. */
+export const gentle: Transition = { type: 'spring', bounce: 0.3, visualDuration: 0.48 };
 
-/** Springs for data marks (bars, progress) so values settle with a bounce. */
-export const barSpring: Transition = { type: 'spring', stiffness: 170, damping: 16, mass: 0.9 };
+/** Page-to-page slide: quick with a small overshoot so edges don't gap. */
+export const pageSpring: Transition = { type: 'spring', bounce: 0.2, visualDuration: 0.42 };
 
-export const tapScale = { scale: 0.95 };
-export const pressScale = { scale: 0.97 };
+/** Data marks (bars, progress) settle with an obvious bounce. */
+export const barSpring: Transition = { type: 'spring', bounce: 0.45, visualDuration: 0.6 };
+
+export const tapScale = { scale: 0.92 };
+export const pressScale = { scale: 0.96 };
 
 export const stagger: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.05, delayChildren: 0.04 } },
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
 };
 
 export const rise: Variants = {
-  hidden: { opacity: 0, y: 18, scale: 0.97 },
-  show: { opacity: 1, y: 0, scale: 1, transition: gentle },
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: spring },
 };
 
 export const slideIn: Variants = {
-  hidden: { opacity: 0, x: -12 },
+  hidden: { opacity: 0, x: -14 },
   show: { opacity: 1, x: 0, transition: spring },
 };
