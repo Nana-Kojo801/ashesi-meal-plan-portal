@@ -45,7 +45,15 @@ export function formatTime(dateStr: string): string {
 
 export function fmtAmount(n: number): string {
   const rounded = Math.round(n * 100) / 100;
-  return rounded.toFixed(2);
+  return rounded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+export function fmtMoney(n: number): string {
+  return `${n < 0 ? '−' : ''}GHS ${fmtAmount(Math.abs(n))}`;
+}
+
+export function longDate(d = new Date()): string {
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 export function getGreeting(): string {

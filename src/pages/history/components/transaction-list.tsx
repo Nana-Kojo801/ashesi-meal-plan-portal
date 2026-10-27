@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
-import { Receipt, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import { CafeBadge } from '../../../components/cafe-badge';
 import { HistorySkeleton } from '../../../components/skeleton';
-import { formatTime, fmtAmount } from '../../../lib/utils';
+import { bouncy, slideIn, stagger, tapScale } from '../../../lib/motion';
+import { formatTime, fmtMoney } from '../../../lib/utils';
 import type { HistoryItem } from '../../../types';
 
 interface Group { date: string; label: string; total: number; items: HistoryItem[] }
@@ -11,47 +13,52 @@ export function TransactionList({ groups, isLoading, error, onRetry }: Props) {
   if (isLoading) return <HistorySkeleton />;
   if (error) {
     return (
-      <div className="empty-state">
-        <strong>{error}</strong>
-        <div><button className="primary-button" onClick={onRetry} style={{ marginTop: 16 }}><RefreshCw size={14} /> Retry</button></div>
+      <div className="card empty-state">
+        <strong>Couldn’t load purchases</strong>
+        <p>{error}</p>
+        <motion.button className="button primary" onClick={onRetry} whileTap={tapScale} transition={bouncy}><RefreshCw size={15} /> Retry</motion.button>
       </div>
     );
   }
-  if (!groups.length) return <div className="empty-state">No purchases in this range. Try another date.</div>;
+  if (!groups.length) {
+    return <div className="card empty-state"><strong>No purchases</strong><p>Nothing was bought in this range. Try another date.</p></div>;
+  }
   return (
-    <>
-      {groups.map((group, groupIndex) => (
-        <motion.section
-          className="history-group"
-          key={group.date}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: groupIndex * .08 }}
-        >
+    <motion.div className="history-groups" variants={stagger} initial="hidden" animate="show">
+      {groups.map((group) => (
+        <section className="history-group" key={group.date} aria-label={group.label}>
           <div className="history-group-head">
-            <div><strong>{group.label}</strong><small>{new Date(`${group.date}T12:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</small></div>
-            <div className="history-group-total"><span>GHS {fmtAmount(group.total)}</span><small>Total spent</small></div>
+            <span>
+              <strong>{group.label}</strong>
+              {(group.label === 'Today' || group.label === 'Yesterday') && (
+                <small>{new Date(`${group.date}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</small>
+              )}
+            </span>
+            <strong>{fmtMoney(group.total)}</strong>
           </div>
-          <div className="transaction-list">
+          <div className="card list-card">
+            <div className="tx-columns" aria-hidden="true">
+              <span>Item</span><span>Café</span><span>Time</span><span>Qty</span><span>Amount</span>
+            </div>
             {group.items.map((tx, index) => (
-              <motion.div
-                className="transaction-row"
-                key={`${tx.date}-${tx.name}-${index}`}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: groupIndex * .08 + index * .045 }}
-              >
-                <span className="transaction-icon"><Receipt size={16} /></span>
-                <div className="transaction-item">{tx.name}</div>
-                <div className="transaction-meta">{tx.transaction_point}<span className="mobile-transaction-time"> · {formatTime(tx.date)}</span></div>
-                <div className="transaction-time">{formatTime(tx.date)}</div>
-                <div className="transaction-qty">×{tx.quantity}</div>
-                <div className="transaction-price">GHS {fmtAmount(tx.cost * tx.quantity)}</div>
+              <motion.div className="list-row tx-row" key={`${tx.date}-${tx.name}-${index}`} variants={slideIn}>
+                <CafeBadge name={tx.transaction_point} />
+                <div className="list-text">
+                  <strong>{tx.name}</strong>
+                  <small className="mobile-only">{tx.transaction_point} · {formatTime(tx.date)}</small>
+                </div>
+                <span className="tx-cell">{tx.transaction_point}</span>
+                <span className="tx-cell muted">{formatTime(tx.date)}</span>
+                <span className="tx-cell muted">×{tx.quantity}</span>
+                <div className="list-trailing">
+                  <strong>{fmtMoney(tx.cost * tx.quantity)}</strong>
+                  {tx.quantity > 1 && <small className="mobile-only">{tx.quantity} × {fmtMoney(tx.cost)}</small>}
+                </div>
               </motion.div>
             ))}
           </div>
-        </motion.section>
+        </section>
       ))}
-    </>
+    </motion.div>
   );
 }

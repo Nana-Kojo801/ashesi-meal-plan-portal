@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Home, Clock3, BarChart3, Calculator, Settings } from 'lucide-react';
+import { NAV_ITEMS } from './nav-items';
+import { bouncy, tapScale } from '../lib/motion';
 import type { Screen } from '../types';
 
 interface BottomNavProps {
@@ -7,33 +8,39 @@ interface BottomNavProps {
   onNav: (screen: Screen) => void;
 }
 
-const ITEMS: { key: Screen; label: string; Icon: typeof Home }[] = [
-  { key: 'home', label: 'Home', Icon: Home },
-  { key: 'report', label: 'History', Icon: Clock3 },
-  { key: 'analytics', label: 'Analytics', Icon: BarChart3 },
-  { key: 'calculator', label: 'Calculator', Icon: Calculator },
-  { key: 'settings', label: 'Settings', Icon: Settings },
-];
-
 export function BottomNav({ screen, onNav }: BottomNavProps) {
   return (
-    <nav className="bottom-nav" aria-label="Mobile navigation">
-      {ITEMS.map(({ key, label, Icon }) => {
+    <motion.nav
+      className="tab-bar glass"
+      aria-label="Main navigation"
+      initial={{ y: 90, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ ...bouncy, delay: 0.1 }}
+    >
+      {NAV_ITEMS.map(({ key, label, Icon }) => {
         const active = screen === key;
         return (
-          <button
+          <motion.button
             key={key}
-            className={`bottom-nav-button ${active ? 'active' : ''}`}
+            type="button"
+            className={`tab-button ${active ? 'active' : ''}`}
+            aria-current={active ? 'page' : undefined}
             onClick={() => onNav(key)}
+            whileTap={tapScale}
+            transition={bouncy}
           >
-            <motion.span animate={{ y: active ? -1 : 0 }} transition={{ type: 'spring', stiffness: 500 }}>
-              <Icon size={23} strokeWidth={active ? 2.6 : 2} />
+            {active && <motion.span layoutId="tab-pill" className="tab-pill" transition={bouncy} />}
+            <motion.span
+              className="tab-icon"
+              animate={{ y: active ? -1 : 0, scale: active ? 1.08 : 1 }}
+              transition={bouncy}
+            >
+              <Icon size={22} strokeWidth={active ? 2.2 : 1.9} />
             </motion.span>
-            <span>{label}</span>
-            {active && <motion.i layoutId="bottom-nav-dot" className="bottom-nav-dot" />}
-          </button>
+            <span className="tab-label">{label}</span>
+          </motion.button>
         );
       })}
-    </nav>
+    </motion.nav>
   );
 }

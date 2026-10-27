@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useNavigate, useLocation, useOutlet } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { WifiOff } from 'lucide-react';
-import { Header } from './components/header';
+import { Sidebar } from './components/header';
 import { BottomNav } from './components/bottom-nav';
 import { Toast } from './components/toast';
 import { LoginPage } from './pages/login/login-page';
@@ -13,12 +14,27 @@ import { useSessionStore } from './stores/session-store';
 import { useMobile } from './hooks/use-mobile';
 import { useOffline } from './hooks/use-offline';
 import { readBalanceCache, writeBalanceCache, clearBalanceCache, BALANCE_CACHE_TTL } from './hooks/use-balance-cache';
+import { gentle, spring } from './lib/motion';
 import type { Screen, ToastState } from './types';
+
+const PATHS: Record<Screen, string> = {
+  home: '/',
+  report: '/history',
+  analytics: '/reports',
+  calculator: '/calculator',
+  settings: '/settings',
+};
+
+function screenFor(pathname: string): Screen {
+  const match = (Object.keys(PATHS) as Screen[]).find((key) => PATHS[key] === pathname);
+  return match ?? 'home';
+}
 
 export default function App() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
+  const outlet = useOutlet();
 
   const { studentId, login, logout: sessionLogout } = useSessionStore();
   const isMobile = useMobile();
@@ -45,16 +61,7 @@ export default function App() {
     if (balanceData && studentId) writeBalanceCache(studentId, balanceData);
   }, [balanceData, studentId]);
 
-  const screen: Screen =
-    location.pathname === '/history'
-      ? 'report'
-      : location.pathname === '/reports'
-        ? 'analytics'
-        : location.pathname === '/calculator'
-          ? 'calculator'
-          : location.pathname === '/settings'
-            ? 'settings'
-            : 'home';
+  const screen = screenFor(location.pathname);
 
   // Only refetch balance on dashboard visit if data is older than 1 minute.
   useEffect(() => {
@@ -66,6 +73,10 @@ export default function App() {
       }
     }
   }, [screen, studentId, queryClient]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [location.pathname]);
 
   const balanceError = balanceQueryError instanceof Error ? balanceQueryError.message : null;
 
@@ -93,74 +104,88 @@ export default function App() {
     navigate('/');
   };
 
-  const handleNav = (s: Screen) => {
-    const path =
-      s === 'home' ? '/' : s === 'report' ? '/history' : s === 'analytics' ? '/reports' : s === 'calculator' ? '/calculator' : '/settings';
-    navigate(path);
-  };
+  const handleNav = (s: Screen) => navigate(PATHS[s]);
 
-  const showToast = (message: string, type: ToastState['type'] = 'success') =>
-    setToast({ message, type });
+  const showToast = useCallback(
+    (message: string, type: ToastState['type'] = 'success') => setToast({ message, type }),
+    [],
+  );
+  const dismissToast = useCallback(() => setToast(null), []);
 
   const studentName = balanceData
     ? `${balanceData.firstname} ${balanceData.lastname}`.trim()
     : (studentId ?? '');
+
+  const toastPortal = createPortal(
+    <Toast toast={toast} onDismiss={dismissToast} isMobile={isMobile} />,
+    document.body,
+  );
+
   if (!studentId) {
     return (
-      <>
+      <MotionConfig reducedMotion="user">
         <LoginPage
           onLogin={(id) => void handleLogin(id)}
           isMobile={isMobile}
           error={loginError}
           loading={loginLoading}
         />
-        {toast &&
-          createPortal(
-            <Toast toast={toast} onDismiss={() => setToast(null)} isMobile={isMobile} />,
-            document.body,
-          )}
-      </>
+        {toastPortal}
+      </MotionConfig>
     );
   }
 
   return (
-    <AppContext.Provider
-      value={{
-        balanceData: balanceData ?? null,
-        loadingBalance,
-        balanceError,
-        isMobile,
-        studentName,
-        showToast,
-        logout: handleLogout,
-        retryBalance: () => {
-          void queryClient.invalidateQueries({ queryKey: ['balance', studentId] });
-        },
-      }}
-    >
-      <div className={`app-shell screen-${screen}`}>
-        <Header screen={screen} onNav={handleNav} />
-        {isOffline && (
-          <div className="offline-banner">
-            <WifiOff size={14} />
-            You're offline — showing cached data
-          </div>
-        )}
-        <main className="app-main">
-          <div className="app-content">
-              <div className="route-view" key={location.pathname}>
-                <Outlet />
-              </div>
-          </div>
-        </main>
-        {isMobile &&
-          createPortal(<BottomNav screen={screen} onNav={handleNav} />, document.body)}
-        {toast &&
-          createPortal(
-            <Toast toast={toast} onDismiss={() => setToast(null)} isMobile={isMobile} />,
-            document.body,
+    <MotionConfig reducedMotion="user">
+      <AppContext.Provider
+        value={{
+          balanceData: balanceData ?? null,
+          loadingBalance,
+          balanceError,
+          isMobile,
+          studentName,
+          showToast,
+          logout: handleLogout,
+          retryBalance: () => {
+            void queryClient.invalidateQueries({ queryKey: ['balance', studentId] });
+          },
+        }}
+      >
+        <div className="app-shell">
+          {!isMobile && (
+            <Sidebar screen={screen} onNav={handleNav} studentName={studentName} studentId={studentId} />
           )}
-      </div>
-    </AppContext.Provider>
+          <main className="app-main">
+            <AnimatePresence initial={false}>
+              {isOffline && (
+                <motion.div
+                  className="offline-banner glass-soft"
+                  initial={{ opacity: 0, y: -12, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.95 }}
+                  transition={spring}
+                >
+                  <WifiOff size={14} />
+                  You're offline. Showing saved data.
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={location.pathname}
+                className="route-view"
+                initial={{ opacity: 0, y: 18, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1, transition: gentle }}
+                exit={{ opacity: 0, y: -6, scale: 0.995, transition: { duration: 0.12 } }}
+              >
+                {outlet}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+          {isMobile && createPortal(<BottomNav screen={screen} onNav={handleNav} />, document.body)}
+          {toastPortal}
+        </div>
+      </AppContext.Provider>
+    </MotionConfig>
   );
 }

@@ -2,11 +2,18 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { fetchHistory } from '../../api';
-import { todayISO, getGreeting, fmtAmount } from '../../lib/utils';
+import { todayISO, getGreeting, fmtMoney, longDate } from '../../lib/utils';
 import { useAppContext } from '../../context/app-context';
 import { useSessionStore } from '../../stores/session-store';
+import { useSpendingHistory } from '../../hooks/use-spending-history';
+import { useAnalytics } from '../reports/hooks/use-analytics';
+import { BalanceHero } from './components/balance-hero';
+import { StatTiles } from './components/stat-tiles';
+import { WeekCard } from './components/week-card';
+import { HabitsCard } from './components/habits-card';
 import { RecentActivity } from './components/recent-activity';
 import { DashboardSkeleton } from '../../components/skeleton';
+import { rise, stagger, tapScale } from '../../lib/motion';
 import type { HistoryItem } from '../../types';
 
 export function HomePage() {
@@ -42,8 +49,8 @@ export function HomePage() {
     }
   }, [historyEnabled, isHistoryLoading, todayHistory, historyCacheKey]);
 
-  const spentToday = todayHistory.reduce((sum, item) => sum + item.cost * item.quantity, 0);
-  const recentItems = [...todayHistory].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
+  const { data: history = [], isLoading: isStatsLoading } = useSpendingHistory();
+  const stats = useAnalytics(history, balanceData);
 
   if (loading && !balanceData) {
     return <DashboardSkeleton />;
@@ -51,58 +58,61 @@ export function HomePage() {
 
   if (error && !balanceData) {
     return (
-      <div className="empty-state">
-        <strong>Failed to load your meal plan</strong>
-        <div style={{ marginTop: 6 }}>{error}</div>
-        <button className="primary-button" onClick={retryBalance} style={{ marginTop: 18 }}>Try again</button>
+      <div className="page">
+        <div className="card empty-state">
+          <strong>Couldn’t load your meal plan</strong>
+          <p>{error}</p>
+          <motion.button className="button primary" onClick={retryBalance} whileTap={tapScale}>Try again</motion.button>
+        </div>
       </div>
     );
   }
 
   if (!balanceData) return <DashboardSkeleton />;
 
+  const spentToday = todayHistory.reduce((sum, item) => sum + item.cost * item.quantity, 0);
+  const recentItems = [...todayHistory].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
   const dailyLimit = balanceData.daily_spending_limit;
-  const dailyBalance = Math.max(0, dailyLimit - spentToday);
-  const remaining = dailyLimit > 0 ? Math.min(100, Math.max(0, (dailyBalance / dailyLimit) * 100)) : 0;
 
   return (
-    <div className="page home-grid">
-      <motion.section
-        className="balance-stage red-plane"
-        initial={{ opacity: 0, scale: .985 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: .55, ease: [0.2, 0.7, 0.2, 1] }}
-      >
+    <motion.div className="page" variants={stagger} initial="hidden" animate="show">
+      <motion.header className="page-header" variants={rise}>
         <div>
-          <div className="home-greeting">{getGreeting()}</div>
-          <h1 className="home-name">{balanceData.firstname}</h1>
+          <p className="page-eyebrow">{longDate()}</p>
+          <h1 className="page-title small">{getGreeting()}, {balanceData.firstname}</h1>
         </div>
-        <div className="balance-main">
-          <motion.div
-            key={dailyBalance}
-            className="balance-value display-number"
-            initial={{ opacity: 0, y: 22, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ type: 'spring', stiffness: 170, damping: 22 }}
-          >
-            GHS {fmtAmount(dailyBalance)}
+      </motion.header>
+
+      <div className="columns home-columns">
+        <div className="column-main">
+          <motion.div variants={rise}>
+            <BalanceHero
+              dailyLimit={dailyLimit}
+              spentToday={spentToday}
+              purchasesToday={todayHistory.length}
+              totalLoaded={balanceData.amount}
+            />
           </motion.div>
-          <div className="balance-label">Available today</div>
-          <div className="balance-progress"><div style={{ width: `${remaining}%` }} /></div>
-          <div className="balance-limit"><strong>GHS {fmtAmount(dailyLimit)}</strong><span>Daily limit</span></div>
-        </div>
-        <div className="home-facts">
-          <motion.div className="home-fact" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .28 }}>
-            <strong>GHS {fmtAmount(spentToday)}</strong>
-            <span>Spent today</span>
-          </motion.div>
-          <motion.div className="home-fact" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .36 }}>
-            <strong>GHS {fmtAmount(balanceData.amount)}</strong>
-            <span>Total loaded</span>
+          {(isStatsLoading || stats) && (
+            <motion.div variants={rise} className="order-stats">
+              <StatTiles stats={stats} loading={isStatsLoading} />
+            </motion.div>
+          )}
+          <motion.div variants={rise} className="order-today">
+            <RecentActivity items={recentItems} isLoading={isHistoryLoading} total={fmtMoney(spentToday)} />
           </motion.div>
         </div>
-      </motion.section>
-      <RecentActivity items={recentItems} isLoading={isHistoryLoading} />
-    </div>
+        {stats && (
+          <div className="column-side">
+            <motion.div variants={rise} className="order-week">
+              <WeekCard days={stats.dailyTrend.slice(-7)} dailyLimit={dailyLimit} />
+            </motion.div>
+            <motion.div variants={rise} className="order-habits">
+              <HabitsCard stats={stats} />
+            </motion.div>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }

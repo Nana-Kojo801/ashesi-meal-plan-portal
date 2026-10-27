@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'Ashesi Meals',
         short_name: 'AshesiMeals',
         description: 'Ashesi University meal plan subscriber portal',
-        theme_color: '#850008',
+        theme_color: '#FFFFFF',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
